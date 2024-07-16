@@ -20,14 +20,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/decentraland/exploration-games.git"
+    "url": "git+ssh://git@github.com/decentraland/exploration-games-site.git"
   },
   "author": "Decentraland",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/decentraland/exploration-games/issues"
+    "url": "https://github.com/decentraland/exploration-games-site/issues"
   },
-  "homepage": "https://github.com/decentraland/exploration-games#readme",
+  "homepage": "https://github.com/decentraland/exploration-games-site#readme",
   "engines": {
     "node": "20.*",
     "npm": "8.* || 9.*"
