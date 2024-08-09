@@ -100,7 +100,6 @@ const useAuth = (
   const disconnectAndSignOut = useCallback(() => disconnect(true), [disconnect])
 
   const [switching, setIsSwitchingChain] = useState(false)
-  console.log(" > useAuth > switching > ", switching)
 
   const switchTo = useCallback(
     async (chainId: ChainId) => {

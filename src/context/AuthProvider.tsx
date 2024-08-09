@@ -36,17 +36,6 @@ const AuthProvider = (props: React.PropsWithChildren<AuthProviderProps>) => {
   const { children } = props
   const auth = useAuth()
 
-  // TODO: Remove after all dApps get the user identity from localhost
-  // Initialize SSO
-  // Will only be initialized if the sso url is provided.
-  // If the url is not provided, the identity of the user will be stored in the application's local storage instead of the sso local storage.
-  /* useEffect(() => {
-    console.log(" > AuthProvider > useEffect > sso > ", sso)
-    if (sso && isURL(sso)) {
-      SSO.init(sso)
-    }
-  }, [sso]) */
-
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
 }
 
