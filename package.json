@@ -40,7 +40,6 @@
     "date-fns": "^3.6.0",
     "decentraland-connect": "^7.0.1",
     "decentraland-ui2": "^0.0.2",
-    "radash": "^12.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
