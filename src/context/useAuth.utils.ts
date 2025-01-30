@@ -37,52 +37,50 @@ const fetchChainId = async (provider: Provider) => {
 
 const restoreConnection = async (): Promise<AuthState> => {
   try {
-    const connectionData = connection.getConnectionData()
+    const data = await connection.tryPreviousConnection().catch(() => null)
 
-    if (connectionData) {
-      const { providerType, chainId } = connectionData
-      const data = await connection.connect(providerType, chainId)
-      const provider = data.provider
-
-      if (!provider) {
-        throw new Error(`Error getting provider`)
+    // Si no hay conexión previa o falló la reconexión
+    if (!data || !data.provider) {
+      return {
+        ...initialState,
+        status: AuthStatus.Disconnected,
       }
+    }
 
-      const currentAccounts = await fetchAccounts(provider)
-      const account = currentAccounts[0]
-      // Get the identity first from the local storage. If it doesn't exist, get it from the iframe.
-      const identity =
-        SSO.localStorageGetIdentity(account) ?? (await SSO.getIdentity(account))
+    const provider = data.provider
+    const currentAccounts = await fetchAccounts(provider)
+    const account = currentAccounts[0]
+    const identity = SSO.localStorageGetIdentity(account)
 
-      if (identity) {
-        const currentChainId = await fetchChainId(provider)
-        await setCurrentIdentity(identity)
+    if (identity) {
+      const currentChainId = await fetchChainId(provider)
+      await setCurrentIdentity(identity)
 
-        return {
-          account,
-          provider,
-          chainId: Number(currentChainId),
-          providerType,
-          identity,
-          status: AuthStatus.Connected,
-          selecting: false,
-          error: null,
-        }
+      return {
+        account,
+        provider,
+        chainId: Number(currentChainId),
+        providerType: data.providerType,
+        identity,
+        status: AuthStatus.Connected,
+        selecting: false,
+        error: null,
       }
+    }
+
+    return {
+      ...initialState,
+      status: AuthStatus.Disconnected,
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error(err)
-    // ErrorClient.report("Error restoring connection", err)
-
     return {
       ...initialState,
       status: AuthStatus.Disconnected,
       error: err.message,
     }
   }
-
-  return { ...initialState, status: AuthStatus.Disconnected }
 }
 
 const createConnection = async (

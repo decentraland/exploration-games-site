@@ -17,7 +17,7 @@ const pages = [
   },
 ]
 
-const Navbar = () => {
+const Menu = () => {
   const navigate = useNavigate()
   return (
     <AppBar position="static">
@@ -43,4 +43,4 @@ const Navbar = () => {
   )
 }
 
-export { Navbar }
+export { Menu }

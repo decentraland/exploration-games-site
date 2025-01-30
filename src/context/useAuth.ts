@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { ProviderType } from "@dcl/schemas/dist/dapps/provider-type"
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { connection } from "decentraland-connect"
-import { clearIdentity, setCurrentIdentity } from "./auth/storage"
 import {
-  createConnection,
+  clearIdentity,
+  setCurrentIdentity,
+  setIdentityFn,
+} from "./auth/storage"
+import {
   initialState,
   isLoading,
   restoreConnection,
@@ -12,6 +15,7 @@ import {
 } from "./useAuth.utils"
 import { logger } from "../utils/logger"
 import { AuthState, AuthStatus } from "./useAuth.types"
+import type { AuthIdentity } from "@dcl/crypto/dist/types"
 import type { ChainId } from "@dcl/schemas/dist/dapps/chain-id"
 
 let CONNECTION_PROMISE: Promise<AuthState> | null = null
@@ -24,6 +28,13 @@ const useAuth = (
   } = { authPath: "/auth" }
 ) => {
   const [state, setState] = useState<AuthState>({ ...initialState })
+  const [identity, setIdentity] = useState<AuthIdentity | null>(null)
+
+  // Register the setIdentity function
+  useEffect(() => {
+    setIdentityFn(setIdentity)
+    return () => setIdentityFn(() => {})
+  }, [])
 
   const authorize = useCallback(() => {
     window.location.replace(
@@ -81,6 +92,7 @@ const useAuth = (
 
       if (signOut) {
         clearIdentity()
+        setIdentity(null)
       }
 
       setState({
@@ -112,12 +124,12 @@ const useAuth = (
         try {
           setIsSwitchingChain(true)
           await switchToChainId(state.provider, chainId)
-          setState({ ...state, chainId: Number(chainId) })
+          setState((prevState) => ({ ...prevState, chainId: Number(chainId) }))
           setIsSwitchingChain(false)
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
-          setState({ ...state, error: err.message })
+          setState((prevState) => ({ ...prevState, error: err.message }))
           setIsSwitchingChain(false)
         }
       }
@@ -139,40 +151,11 @@ const useAuth = (
           if (!cancelled) {
             setState(result)
           }
-
           CONNECTION_PROMISE = null
         })
         .catch((err) => {
           logger.error("Error restoring session", err)
           CONNECTION_PROMISE = null
-        })
-    }
-
-    // connect
-    if (
-      state.status === AuthStatus.Connecting &&
-      state.providerType &&
-      state.chainId
-    ) {
-      if (!CONNECTION_PROMISE) {
-        CONNECTION_PROMISE = createConnection(state.providerType, state.chainId)
-      }
-
-      Promise.resolve(CONNECTION_PROMISE)
-        .then((result) => {
-          if (!cancelled) {
-            if (result.status !== AuthStatus.Connected) {
-              result.selecting = state.selecting
-            }
-
-            setState(result)
-          }
-
-          CONNECTION_PROMISE = null
-        })
-        .catch((err) => {
-          CONNECTION_PROMISE = null
-          logger.error("Error creating session", err)
         })
     }
 
@@ -202,17 +185,18 @@ const useAuth = (
   useEffect(() => {
     const provider = state.provider
     const onDisconnect = () => disconnect()
+    const onAccountsChanged = () => disconnect()
     const onChainChanged = (chainId: ChainId) =>
-      setState({ ...state, chainId: Number(chainId) })
+      setState((prevState) => ({ ...prevState, chainId: Number(chainId) }))
 
     if (provider && !provider.isFortmatic) {
       if (provider.on) {
         provider.on("chainChanged", onChainChanged)
-        provider.on("accountsChanged", onDisconnect)
+        provider.on("accountsChanged", onAccountsChanged)
         provider.on("disconnect", onDisconnect)
       } else if (provider.addListener) {
         provider.addListener("chainChanged", onChainChanged)
-        provider.addListener("accountsChanged", onDisconnect)
+        provider.addListener("accountsChanged", onAccountsChanged)
         provider.addListener("disconnect", onDisconnect)
       }
     }
@@ -251,6 +235,6 @@ const useAuth = (
     [connect, switchTo, select, authorize, disconnectAndSignOut, loading, state]
   )
 
-  return [state.account, actions] as const
+  return [state.account, { ...actions, identity, setIdentity }] as const
 }
 export { initialState, useAuth }
