@@ -20,7 +20,11 @@ const router = createBrowserRouter(
         <Route path={locations.challenges()} element={<Challenges />} />
       </Route>
     </Route>
-  )
+  ),
+  {
+    // TODO: apply the final basename
+    basename: process.env.NODE_ENV === "production" ? "/mini-game" : undefined,
+  }
 )
 
 export { router }

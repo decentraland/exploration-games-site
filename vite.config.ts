@@ -1,9 +1,10 @@
 import react from "@vitejs/plugin-react"
+import rollupNodePolyFill from "rollup-plugin-polyfill-node"
 import { defineConfig, loadEnv } from "vite"
 
 // https://vitejs.dev/config/
 // eslint-disable-next-line import/no-default-export
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const envVariables = loadEnv(mode, process.cwd())
   return {
     plugins: [react()],
@@ -28,5 +29,15 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+      rollupOptions: {
+        plugins: [rollupNodePolyFill()],
+      },
+      sourcemap: true,
+    },
+    ...(command === "build" ? { base: envVariables.VITE_BASE_URL } : undefined),
   }
 })
