@@ -1,5 +1,5 @@
+import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import { Button, Typography } from "decentraland-ui2"
-import { useAuthContext } from "../../context/AuthProvider"
 import { SignInContainer } from "./SignIn.styled"
 
 const SignIn = () => {

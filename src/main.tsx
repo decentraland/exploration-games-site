@@ -1,5 +1,5 @@
-import * as React from "react"
 import { RouterProvider } from "react-router-dom"
+import AuthProvider from "decentraland-gatsby/dist/context/Auth/AuthProvider"
 import * as ReactDOM from "react-dom/client"
 import {
   CssBaseline,
@@ -7,16 +7,16 @@ import {
   darkTheme,
 } from "decentraland-ui2"
 import { router } from "./components/Router/Router"
-// import { config } from "./config"
-import { AuthProvider } from "./context/AuthProvider"
+import { config } from "./config"
+
+const ssoUrl = config.get("SSO_URL")
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <CssVarsProvider theme={darkTheme}>
     <CssBaseline />
-    <React.StrictMode>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
-    </React.StrictMode>
+    {/* @ts-expect-error AuthProvider type definition issue */}
+    <AuthProvider sso={ssoUrl}>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </CssVarsProvider>
 )

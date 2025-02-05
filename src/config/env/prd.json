@@ -1,3 +1,4 @@
 {
-  "URL_CATALYST": "https://peer.decentraland.org"
+  "CATALYST_URL": "https://peer.decentraland.org",
+  "SSO_URL": "https://id.decentraland.org"
 }

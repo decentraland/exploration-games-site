@@ -1,16 +1,17 @@
 import { useCallback, useEffect } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
+import { Avatar } from "@dcl/schemas/dist/platform/profile/avatar"
+import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
+import useProfileContext from "decentraland-gatsby/dist/context/Auth/useProfileContext"
 import { Navbar } from "decentraland-ui2"
 import { Menu } from "./Menu"
 import { config } from "../../config"
-import { useAuthContext } from "../../context/AuthProvider"
-import { useAvatar } from "../../hooks/useAvatar"
 import { locations } from "../../modules/Locations"
 import { LayoutContainer } from "./Layout.styled"
 
 const Layout = () => {
   const [account, accountState] = useAuthContext()
-  const [avatar, avatarState] = useAvatar(account)
+  const [avatar, avatarState] = useProfileContext()
   const navigate = useNavigate()
 
   const handleClickBalance = useCallback(
@@ -40,7 +41,7 @@ const Layout = () => {
     <LayoutContainer>
       <Navbar
         address={account || undefined}
-        avatar={(avatarState.loaded && avatar) || undefined}
+        avatar={(avatarState.loaded && (avatar as Avatar)) || undefined}
         activePage="governance"
         isSignedIn={!!account}
         isSigningIn={accountState.loading}
