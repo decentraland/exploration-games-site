@@ -1,3 +1,4 @@
 {
-  "CATALYST_URL": "https://peer-testing.decentraland.org"
+  "CATALYST_URL": "https://peer-testing.decentraland.org",
+  "SERVER_URL": "https://exploration-games.decentraland.zone"
 }

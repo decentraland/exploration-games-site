@@ -1,5 +1,7 @@
+import { MissionList } from "./MissionList"
+
 const Missions = () => {
-  return <div>WIP</div>
+  return <MissionList />
 }
 
 export { Missions }

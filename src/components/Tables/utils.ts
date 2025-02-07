@@ -27,6 +27,10 @@ const stableSort = <T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number
 ) => {
+  if (!array.length) {
+    return []
+  }
+
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number])
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0])

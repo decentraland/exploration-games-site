@@ -13,38 +13,38 @@ import TableRow from "@mui/material/TableRow"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
+import {
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "decentraland-ui2"
+import { MissionEditor } from "./MissionEditor"
 import { locations } from "../../modules/Locations"
+import { missionService } from "../../services/missionService"
+import { Mission } from "../../types"
 import { HeadCell, TableOrder } from "../Tables/Table.types"
 import { TableHeader } from "../Tables/TableHeader"
 import { getComparator, stableSort } from "../Tables/utils"
 
-interface Data {
-  id: number
-  name: string
-}
-
-function createData(id: number, name: string): Data {
-  return {
-    id,
-    name,
-  }
-}
-
-const rows = [
-  createData(1, "Cupcake"),
-  createData(2, "Donut"),
-  createData(3, "Eclair"),
-  createData(4, "Frozen yoghurt"),
-  createData(5, "Gingerbread"),
-  createData(6, "Honeycomb"),
-]
-
-const headerExample: readonly HeadCell<Data>[] = [
+const headerData: readonly HeadCell<Mission>[] = [
   {
-    id: "name",
+    id: "id",
     numeric: false,
     disablePadding: true,
-    label: "Dessert (100g serving)",
+    label: "ID",
+  },
+  {
+    id: "description",
+    numeric: false,
+    disablePadding: true,
+    label: "Description",
+  },
+  {
+    id: "campaign_key",
+    numeric: false,
+    disablePadding: true,
+    label: "Campaign Key",
   },
 ]
 
@@ -57,51 +57,64 @@ function MissionListToolbar() {
         id="tableTitle"
         component="div"
       >
-        Mission
+        Missions
       </Typography>
     </Toolbar>
   )
 }
+
 const MissionList = () => {
   const [account, accountState] = useAuthContext()
   const loading = accountState.loading
+  const [missions, setMissions] = React.useState<Mission[]>([])
+  const [loadingMissions, setLoadingMissions] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
 
   if (!account && !loading) {
     return <Navigate to={locations.signIn()} />
   }
   const [order, setOrder] = React.useState<TableOrder>(TableOrder.ASC)
-  const [orderBy, setOrderBy] = React.useState<keyof Data>("name")
-  const [selected, setSelected] = React.useState<readonly number[]>([])
+  const [orderBy, setOrderBy] = React.useState<keyof Mission>("description")
   const [page, setPage] = React.useState(0)
   const [dense, setDense] = React.useState(false)
-  const [rowsPerPage, setRowsPerPage] = React.useState(5)
+  const [rowsPerPage, setRowsPerPage] = React.useState(25)
+  const [openModal, setOpenModal] = React.useState(false)
+  const [selectedMissionId, setSelectedMissionId] = React.useState<
+    string | null
+  >(null)
+
+  React.useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        setLoadingMissions(true)
+        const data = await missionService.getAllMissions()
+        setMissions(data)
+      } catch (err) {
+        setError("Failed to fetch missions")
+      } finally {
+        setLoadingMissions(false)
+      }
+    }
+
+    fetchMissions()
+  }, [])
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Data
+    property: keyof Mission
   ) => {
     const isAsc = orderBy === property && order === TableOrder.ASC
     setOrder(isAsc ? TableOrder.DESC : TableOrder.ASC)
     setOrderBy(property)
   }
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id)
-    let newSelected: readonly number[] = []
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id)
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1))
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1))
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      )
-    }
-    setSelected(newSelected)
+  const handleClickInfoModal = (
+    event: React.MouseEvent<unknown>,
+    missionId: string
+  ) => {
+    console.log("open mod al", missionId)
+    setSelectedMissionId(missionId)
+    setOpenModal(true)
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -119,26 +132,47 @@ const MissionList = () => {
     setDense(event.target.checked)
   }
 
-  const isSelected = (id: number) => selected.indexOf(id) !== -1
-
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - missions.length) : 0
 
   const visibleRows = React.useMemo(
     () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
+      stableSort(missions, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, missions]
   )
+
+  if (loadingMissions) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "60vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  if (missions.length === 0) {
+    return <div>No missions found</div>
+  }
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
+      <Paper sx={{ mb: 2 }}>
         <MissionListToolbar />
-        <TableContainer>
+        <TableContainer sx={{ paddingX: 2 }}>
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
@@ -147,23 +181,20 @@ const MissionList = () => {
             <TableHeader
               order={order}
               orderBy={orderBy}
-              headCells={headerExample}
+              headCells={headerData}
               onRequestSort={handleRequestSort}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.id)
                 const labelId = `enhanced-table-checkbox-${index}`
 
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={(event) => handleClickInfoModal(event, row.id)}
                     role="checkbox"
-                    aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
+                    key={index}
                     sx={{ cursor: "pointer" }}
                   >
                     <TableCell
@@ -172,7 +203,24 @@ const MissionList = () => {
                       scope="row"
                       padding="none"
                     >
-                      {row.name}
+                      {row.id}
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      padding="none"
+                    >
+                      {row.description}
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      padding="none"
+                    >
+                      {/* TODO: Add campaign key to server endpoint */}
+                      {row.campaign_key}
                     </TableCell>
                   </TableRow>
                 )
@@ -190,9 +238,9 @@ const MissionList = () => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
-          count={rows.length}
+          count={missions.length || 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -203,6 +251,18 @@ const MissionList = () => {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
       />
+
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>Mission Info</DialogTitle>
+        <DialogContent>
+          <MissionEditor missionId={selectedMissionId} />
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 }

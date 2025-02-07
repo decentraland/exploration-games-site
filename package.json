@@ -35,8 +35,11 @@
   "dependencies": {
     "@dcl/crypto": "^3.4.5",
     "@dcl/ui-env": "^1.4.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
+    "@mui/material": "^5.16.14",
     "date-fns": "^3.6.0",
     "decentraland-connect": "^7.0.1",
     "decentraland-gatsby": "^6.28.1",
