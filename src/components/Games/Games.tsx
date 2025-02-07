@@ -89,7 +89,7 @@ const Games = () => {
   }, [])
 
   const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
+    _: React.MouseEvent<unknown>,
     property: keyof Game
   ) => {
     const isAsc = orderBy === property && order === TableOrder.ASC
@@ -97,7 +97,7 @@ const Games = () => {
     setOrderBy(property)
   }
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+  const handleClick = (_: React.MouseEvent<unknown>, id: number) => {
     const selectedIndex = selected.indexOf(id)
     let newSelected: readonly number[] = []
 
@@ -116,7 +116,7 @@ const Games = () => {
     setSelected(newSelected)
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage)
   }
 

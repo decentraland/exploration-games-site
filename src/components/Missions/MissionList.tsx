@@ -100,7 +100,7 @@ const MissionList = () => {
   }, [])
 
   const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
+    _: React.MouseEvent<unknown>,
     property: keyof Mission
   ) => {
     const isAsc = orderBy === property && order === TableOrder.ASC
@@ -109,7 +109,7 @@ const MissionList = () => {
   }
 
   const handleClickInfoModal = (
-    event: React.MouseEvent<unknown>,
+    _: React.MouseEvent<unknown>,
     missionId: string
   ) => {
     console.log("open mod al", missionId)
@@ -117,7 +117,7 @@ const MissionList = () => {
     setOpenModal(true)
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage)
   }
 
