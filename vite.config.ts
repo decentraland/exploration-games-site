@@ -35,8 +35,15 @@ export default defineConfig(({ command, mode }) => {
       },
       rollupOptions: {
         plugins: [rollupNodePolyFill()],
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom", "react-router-dom"],
+            mui: ["@mui/material"],
+          },
+        },
       },
-      sourcemap: true,
+      sourcemap: false,
+      chunkSizeWarningLimit: 4000,
     },
     ...(command === "build" ? { base: envVariables.VITE_BASE_URL } : undefined),
   }
