@@ -1,23 +1,21 @@
 import * as React from "react"
 import { Navigate } from "react-router-dom"
-import Box from "@mui/material/Box"
-import FormControlLabel from "@mui/material/FormControlLabel"
-import Paper from "@mui/material/Paper"
-import Switch from "@mui/material/Switch"
-import Table from "@mui/material/Table"
-import TableBody from "@mui/material/TableBody"
-import TableCell from "@mui/material/TableCell"
-import TableContainer from "@mui/material/TableContainer"
-import TablePagination from "@mui/material/TablePagination"
-import TableRow from "@mui/material/TableRow"
-import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import {
+  Box,
   CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TablePagination,
+  TableRow,
+  Toolbar,
+  Typography,
 } from "decentraland-ui2"
 import { MissionEditor } from "./MissionEditor"
 import { locations } from "../../modules/Locations"
@@ -76,7 +74,6 @@ const MissionList = () => {
   const [order, setOrder] = React.useState<TableOrder>(TableOrder.ASC)
   const [orderBy, setOrderBy] = React.useState<keyof Mission>("description")
   const [page, setPage] = React.useState(0)
-  const [dense, setDense] = React.useState(false)
   const [rowsPerPage, setRowsPerPage] = React.useState(25)
   const [openModal, setOpenModal] = React.useState(false)
   const [selectedMissionId, setSelectedMissionId] = React.useState<
@@ -84,20 +81,20 @@ const MissionList = () => {
   >(null)
 
   React.useEffect(() => {
-    const fetchMissions = async () => {
-      try {
-        setLoadingMissions(true)
-        const data = await missionService.getAllMissions()
-        setMissions(data)
-      } catch (err) {
-        setError("Failed to fetch missions")
-      } finally {
-        setLoadingMissions(false)
-      }
-    }
-
     fetchMissions()
   }, [])
+
+  const fetchMissions = async () => {
+    try {
+      setLoadingMissions(true)
+      const data = await missionService.getAllMissions()
+      setMissions(data)
+    } catch (err) {
+      setError("Failed to fetch missions")
+    } finally {
+      setLoadingMissions(false)
+    }
+  }
 
   const handleRequestSort = (
     _: React.MouseEvent<unknown>,
@@ -126,10 +123,6 @@ const MissionList = () => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10))
     setPage(0)
-  }
-
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked)
   }
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -176,7 +169,7 @@ const MissionList = () => {
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
+            size={"medium"}
           >
             <TableHeader
               order={order}
@@ -219,7 +212,6 @@ const MissionList = () => {
                       scope="row"
                       padding="none"
                     >
-                      {/* TODO: Add campaign key to server endpoint */}
                       {row.campaign_key}
                     </TableCell>
                   </TableRow>
@@ -228,7 +220,7 @@ const MissionList = () => {
               {emptyRows > 0 && (
                 <TableRow
                   style={{
-                    height: (dense ? 33 : 53) * emptyRows,
+                    height: 53 * emptyRows,
                   }}
                 >
                   <TableCell colSpan={6} />
@@ -247,10 +239,6 @@ const MissionList = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
 
       <Dialog
         open={openModal}
@@ -260,7 +248,12 @@ const MissionList = () => {
       >
         <DialogTitle>Mission Info</DialogTitle>
         <DialogContent>
-          <MissionEditor missionId={selectedMissionId} />
+          <MissionEditor
+            missionId={selectedMissionId}
+            onUpdate={() => {
+              fetchMissions()
+            }}
+          />
         </DialogContent>
       </Dialog>
     </Box>

@@ -1,41 +1,57 @@
 import * as React from "react"
 import {
   Box,
+  Button,
   CircularProgress,
-  List,
-  ListItem,
   TextField,
   Typography,
 } from "decentraland-ui2"
 import { missionService } from "../../services/missionService"
-import { MissionData } from "../../types"
+import { Mission, MissionData } from "../../types"
+import { ChallengeList } from "../Challenges/ChallengeList"
 
 interface MissionEditorProps {
   missionId: string | null
+  onUpdate?: () => void
 }
 
-const MissionEditor = ({ missionId }: MissionEditorProps) => {
-  const [missionData, setMissionData] = React.useState<MissionData | null>(null)
+const MissionEditor = ({ missionId, onUpdate }: MissionEditorProps) => {
+  const [serverData, setServerData] = React.useState<MissionData | null>(null)
+  const [description, setDescription] = React.useState("")
+  const [campaignKey, setCampaignKey] = React.useState("")
   const [loadingMissionData, setLoadingMissionData] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (missionId) {
-      const fetchMissionData = async () => {
-        try {
-          setLoadingMissionData(true)
-          const data = await missionService.getMissionById(missionId)
-          setMissionData(data)
-        } catch (err) {
-          setError("Failed to fetch missions")
-        } finally {
-          setLoadingMissionData(false)
-        }
-      }
-
-      fetchMissionData()
-    }
+    fetchMissionData()
   }, [missionId])
+
+  const fetchMissionData = async () => {
+    if (missionId) {
+      try {
+        setLoadingMissionData(true)
+        const data = await missionService.getMissionById(missionId)
+        setServerData(data)
+        setDescription(data.mission.description)
+        setCampaignKey(data.mission.campaign_key)
+      } catch (err) {
+        setError("Failed to fetch missions")
+      } finally {
+        setLoadingMissionData(false)
+      }
+    }
+  }
+
+  const updateMission = async (mission: Mission) => {
+    const body = {
+      ...mission,
+      description,
+      campaign_key: campaignKey,
+    }
+    await missionService.updateMission(body)
+    fetchMissionData()
+    onUpdate && onUpdate()
+  }
 
   if (loadingMissionData) {
     return (
@@ -56,58 +72,57 @@ const MissionEditor = ({ missionId }: MissionEditorProps) => {
     return <Box sx={{ color: "error.main" }}>{error}</Box>
   }
 
-  if (!missionData) return null
+  if (!serverData) return null
+
+  const dataChanged =
+    description !== serverData.mission.description ||
+    campaignKey !== serverData.mission.campaign_key
 
   return (
     <React.Fragment>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <Typography> Mission id: {missionData.mission.id}</Typography>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", gap: "10px", mb: 2 }}
+      >
+        <Typography> Mission id: {serverData.mission.id}</Typography>
         <TextField
           label="Description"
           variant="standard"
-          value={missionData.mission.description}
+          value={description}
+          focused={description !== serverData.mission.description}
+          color={
+            description !== serverData.mission.description
+              ? "warning"
+              : "success"
+          }
+          onChange={(e) => setDescription(e.target.value)}
         />
         <TextField
           label="Campaign Key"
           variant="standard"
-          value={missionData.mission.campaign_key}
+          color={
+            campaignKey !== serverData.mission.campaign_key
+              ? "warning"
+              : "success"
+          }
+          focused={campaignKey !== serverData.mission.campaign_key}
+          value={campaignKey}
+          onChange={(e) => setCampaignKey(e.target.value)}
         />
+        <Button
+          variant="contained"
+          sx={{ maxWidth: "250px", alignSelf: "flex-end" }}
+          disabled={!dataChanged}
+          onClick={() => updateMission(serverData.mission)}
+        >
+          Save changes
+        </Button>
       </Box>
       <Typography>Challenges:</Typography>
-      <List>
-        {missionData.challenges?.map((challenge) => {
-          const game = missionData.games.find(
-            (game) => game.id === challenge.game_id
-          )
-          return (
-            <ListItem key={challenge.id}>
-              <Box>
-                <Box>
-                  Game:
-                  <Box
-                    component="span"
-                    color={game?.id ? "success.main" : "error.main"}
-                    sx={{ ml: 1, mr: 1 }}
-                  >
-                    {game?.id
-                      ? `${game?.name} (${game?.parcel})`
-                      : "Game not found"}
-                  </Box>
-                  {challenge.game_id}
-                </Box>
-                <Box>Description: {challenge.description}</Box>
-                <Box>Level: {challenge.target_level}</Box>
-                {challenge.data && <Box> Data: </Box>}
-                {challenge.data && (
-                  <Box component="pre" sx={{ fontSize: "0.8rem" }}>
-                    {JSON.stringify(challenge.data, null, 2)}
-                  </Box>
-                )}
-              </Box>
-            </ListItem>
-          )
-        })}
-      </List>
+      <ChallengeList
+        challengesData={serverData.challenges}
+        gamesData={serverData.games}
+        onUpdate={() => onUpdate && onUpdate()}
+      />
     </React.Fragment>
   )
 }

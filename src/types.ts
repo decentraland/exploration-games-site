@@ -8,11 +8,10 @@ type Mission = {
 type MissionData = {
   mission: Mission
   challenges: ChallengeResponse[]
-  games: Game[]
+  games: GameResponse[]
 }
 
-type Challenge = {
-  id: string
+type ChallengeRequest = {
   description: string
   gameId: string
   missionId: string
@@ -20,6 +19,7 @@ type Challenge = {
   data?: Record<string, unknown>
   // active: boolean
 }
+
 type ChallengeResponse = {
   id: string
   description: string
@@ -30,11 +30,24 @@ type ChallengeResponse = {
   // active: boolean
 }
 
-type Game = {
+type GameResponse = {
   id: string
   name: string
   parcel: string
   // active: boolean
 }
 
-export type { Mission, Challenge, Game, MissionData }
+type GameRequest = {
+  name: string
+  x: number
+  y: number
+}
+
+export type {
+  Mission,
+  ChallengeRequest,
+  GameRequest,
+  GameResponse,
+  MissionData,
+  ChallengeResponse,
+}

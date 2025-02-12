@@ -4,12 +4,12 @@ import { locations } from "../../modules/Locations"
 
 const pages = [
   {
-    name: "Games",
-    path: locations.games(),
-  },
-  {
     name: "Missions",
     path: locations.missions(),
+  },
+  {
+    name: "Games",
+    path: locations.games(),
   },
 ]
 
