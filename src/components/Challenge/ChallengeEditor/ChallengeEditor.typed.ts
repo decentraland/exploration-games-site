@@ -1,13 +1,13 @@
 import { ChallengeResponse } from "../../../types"
 
 type ChallengeEditorProps = {
-  challengeData: ChallengeEditorData | null
+  challengeData: ChallengeEditorDataProps | null
   onUpdate?: () => void
 }
 
-type ChallengeEditorData = ChallengeResponse & {
+type ChallengeEditorDataProps = ChallengeResponse & {
   missionName?: string
   gameName?: string
 }
 
-export type { ChallengeEditorProps, ChallengeEditorData }
+export type { ChallengeEditorProps, ChallengeEditorDataProps }

@@ -6,7 +6,7 @@ import { MissionData, MissionRequest } from "../types.ts"
 const SERVER_URL = config.get("SERVER_URL")
 const api = new API(SERVER_URL)
 
-export const missionService = {
+export const missionApi = {
   async getAllMissions(): Promise<MissionRequest[]> {
     try {
       const response = (await api.fetch(

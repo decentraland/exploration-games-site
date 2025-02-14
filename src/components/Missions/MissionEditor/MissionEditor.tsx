@@ -7,7 +7,7 @@ import {
   Typography,
 } from "decentraland-ui2"
 import { MissionEditorProps } from "./MissionEditor.typed"
-import { missionService } from "../../../services/missionService"
+import { missionApi } from "../../../api/missionApi"
 import { MissionData } from "../../../types"
 import { ChallengeList } from "../../Challenge/ChallengeList/ChallengeList"
 import {
@@ -41,7 +41,7 @@ const MissionEditor = ({ missionId, onUpdate }: MissionEditorProps) => {
     if (missionId) {
       try {
         setLoadingMissionData(true)
-        const data = await missionService.getMissionById(missionId)
+        const data = await missionApi.getMissionById(missionId)
         setServerData(data)
         setDescription(data.mission.description)
         setCampaignKey(data.mission.campaign_key)
@@ -62,9 +62,9 @@ const MissionEditor = ({ missionId, onUpdate }: MissionEditorProps) => {
     }
 
     if (create) {
-      await missionService.createMission(body)
+      await missionApi.createMission(body)
     } else {
-      await missionService.updateMission(missionId, body)
+      await missionApi.updateMission(missionId, body)
     }
     fetchMissionData()
     onUpdate && onUpdate()

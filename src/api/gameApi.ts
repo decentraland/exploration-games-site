@@ -6,7 +6,7 @@ import { GameRequest, GameResponse } from "../types"
 const SERVER_URL = config.get("SERVER_URL")
 const api = new API(SERVER_URL)
 
-export const gameService = {
+export const gameApi = {
   async getAllGames(): Promise<GameResponse[]> {
     try {
       const response = (await api.fetch(

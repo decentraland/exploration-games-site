@@ -1,12 +1,12 @@
-import { Box, styled } from "decentraland-ui2"
+import { Box, Typography, styled } from "decentraland-ui2"
 
-const GameBox = styled(Box)({
+const GameLabel = styled(Typography)({
   margin: "0 10px",
   display: "inline-block",
 })
 
-const ChallengeDataBox = styled(Box)({
+const ChallengeJsonFormatted = styled(Box)({
   fontSize: "0.8rem",
 })
 
-export { ChallengeDataBox, GameBox }
+export { ChallengeJsonFormatted, GameLabel }

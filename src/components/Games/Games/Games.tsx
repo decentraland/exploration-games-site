@@ -25,8 +25,8 @@ import {
   GameNameTableCell,
   GameParcelTableCell,
 } from "./Games.styled.ts"
+import { gameApi } from "../../../api/gameApi.ts"
 import { locations } from "../../../modules/Locations.ts"
-import { gameService } from "../../../services/gameService.ts"
 import { GameResponse } from "../../../types.ts"
 import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
 import { TableHeader } from "../../Tables/TableHeader.tsx"
@@ -80,7 +80,7 @@ const Games = ({
 
   const fetchGames = async () => {
     try {
-      const data = await gameService.getAllGames()
+      const data = await gameApi.getAllGames()
       setGames(data)
     } catch (err) {
       setError("Failed to fetch games")

@@ -6,7 +6,7 @@ import { ChallengeRequest } from "../types"
 const SERVER_URL = config.get("SERVER_URL")
 const api = new API(SERVER_URL)
 
-export const challengeService = {
+export const challengeApi = {
   async updateChallenge(
     id: string,
     challenge: ChallengeRequest

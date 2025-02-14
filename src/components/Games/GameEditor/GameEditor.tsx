@@ -1,23 +1,24 @@
-import * as React from "react"
+import { useState } from "react"
 import { TextField, Typography } from "decentraland-ui2"
-import { gameService } from "../../../services/gameService"
+import { gameApi } from "../../../api/gameApi"
 import { GameEditorProps } from "./GameEditor.types"
-import { GameEditorContainer, GameEditorSaveButton } from "./GameEditor.styled"
+import { Container, SaveButton } from "./GameEditor.styled"
+
+const EMPTY_GAME = {
+  id: "",
+  name: "",
+  parcel: "0,0",
+}
 
 const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
-  const emptyGame = {
-    id: "",
-    name: "",
-    parcel: "0,0",
-  }
   const create = !gameData?.id
-  const initData = create ? emptyGame : gameData
+  const initData = create ? EMPTY_GAME : gameData
 
-  const [name, setName] = React.useState(initData?.name || "")
-  const [parcelX, setParcelX] = React.useState(
+  const [name, setName] = useState(initData?.name || "")
+  const [parcelX, setParcelX] = useState(
     parseInt(initData?.parcel?.split(",")[0] || "0")
   )
-  const [parcelY, setParcelY] = React.useState(
+  const [parcelY, setParcelY] = useState(
     parseInt(initData?.parcel?.split(",")[1] || "0")
   )
 
@@ -31,9 +32,9 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
     }
 
     if (create) {
-      await gameService.createGame(body)
+      await gameApi.createGame(body)
     } else {
-      await gameService.updateGame(initData?.id, body)
+      await gameApi.updateGame(initData?.id, body)
     }
 
     onUpdate && onUpdate()
@@ -47,7 +48,7 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
     parcelY !== parseInt(initData.parcel?.split(",")[1] || "0")
 
   return (
-    <GameEditorContainer>
+    <Container>
       {!create && <Typography> Game ID: {initData.id}</Typography>}
       <TextField
         label="Name"
@@ -87,14 +88,14 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
         error={isNaN(parcelY)}
         helperText={!parcelY ? "Parcel Y is required" : ""}
       />
-      <GameEditorSaveButton
+      <SaveButton
         variant="contained"
         disabled={!dataChanged}
         onClick={saveClickHandler}
       >
         Save changes
-      </GameEditorSaveButton>
-    </GameEditorContainer>
+      </SaveButton>
+    </Container>
   )
 }
 

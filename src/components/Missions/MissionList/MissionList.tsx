@@ -16,8 +16,8 @@ import {
   Toolbar,
   Typography,
 } from "decentraland-ui2"
+import { missionApi } from "../../../api/missionApi"
 import { locations } from "../../../modules/Locations"
-import { missionService } from "../../../services/missionService"
 import { MissionRequest } from "../../../types"
 import { HeadCell, TableOrder } from "../../Tables/Table.types"
 import { TableHeader } from "../../Tables/TableHeader"
@@ -81,7 +81,7 @@ const MissionList = ({
   const fetchMissions = async () => {
     try {
       setLoadingMissions(true)
-      const data = await missionService.getAllMissions()
+      const data = await missionApi.getAllMissions()
       setMissions(data)
     } catch (err) {
       setError("Failed to fetch missions")
