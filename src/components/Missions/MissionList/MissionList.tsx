@@ -1,28 +1,35 @@
 import * as React from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
+import { Add } from "@mui/icons-material"
 import {
   Box,
+  Button,
   CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
-  Table,
   TableBody,
   TableCell,
-  TableContainer,
   TablePagination,
   TableRow,
+  Toolbar,
+  Typography,
 } from "decentraland-ui2"
-import { GameEditor } from "./GameEditor.tsx"
-import { locations } from "../../modules/Locations.ts"
-import { gameService } from "../../services/gameService.ts"
-import { GameResponse } from "../../types.ts"
-import { HeadCell, TableOrder } from "../Tables/Table.types.ts"
-import { TableHeader } from "../Tables/TableHeader.tsx"
-import { getComparator, stableSort } from "../Tables/utils.ts"
+import { locations } from "../../../modules/Locations"
+import { missionService } from "../../../services/missionService"
+import { MissionRequest } from "../../../types"
+import { HeadCell, TableOrder } from "../../Tables/Table.types"
+import { TableHeader } from "../../Tables/TableHeader"
+import { getComparator, stableSort } from "../../Tables/utils"
+import { MissionEditor } from "../MissionEditor/MissionEditor"
+import {
+  MissionListContainer,
+  MissionListTable,
+  MissionListTableContainer,
+} from "./MissionList.styled"
 
-const headerRow: readonly HeadCell<GameResponse>[] = [
+const headerData: readonly HeadCell<MissionRequest>[] = [
   {
     id: "id",
     numeric: false,
@@ -30,68 +37,78 @@ const headerRow: readonly HeadCell<GameResponse>[] = [
     label: "ID",
   },
   {
-    id: "name",
+    id: "description",
     numeric: false,
     disablePadding: true,
-    label: "Name",
+    label: "Description",
   },
   {
-    id: "parcel",
+    id: "campaign_key",
     numeric: false,
     disablePadding: true,
-    label: "Parcel",
+    label: "Campaign Key",
   },
 ]
 
-const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
+const MissionList = ({
+  onSelect,
+}: {
+  onSelect?: (missionId: string, missionName: string) => void
+}) => {
   const [account, accountState] = useAuthContext()
   const loading = accountState.loading
-  const [games, setGames] = React.useState<GameResponse[]>([])
-  const [selectedGame, setSelectedGame] = React.useState<GameResponse | null>(
-    null
-  )
-  const [openEditor, setOpenEditor] = React.useState(false)
-  const [loadingGames, setLoadingGames] = React.useState(true)
+  const [missions, setMissions] = React.useState<MissionRequest[]>([])
+  const [loadingMissions, setLoadingMissions] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
   if (!account && !loading) {
     return <Navigate to={locations.signIn()} />
   }
   const [order, setOrder] = React.useState<TableOrder>(TableOrder.ASC)
-  const [orderBy, setOrderBy] = React.useState<keyof GameResponse>("name")
+  const [orderBy, setOrderBy] =
+    React.useState<keyof MissionRequest>("description")
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(25)
+  const [openModal, setOpenModal] = React.useState(false)
+  const [selectedMissionId, setSelectedMissionId] = React.useState<
+    string | null
+  >(null)
 
-  const fetchGames = async () => {
+  React.useEffect(() => {
+    fetchMissions()
+  }, [])
+
+  const fetchMissions = async () => {
     try {
-      const data = await gameService.getAllGames()
-      setGames(data)
+      setLoadingMissions(true)
+      const data = await missionService.getAllMissions()
+      setMissions(data)
     } catch (err) {
-      setError("Failed to fetch games")
+      setError("Failed to fetch missions")
     } finally {
-      setLoadingGames(false)
+      setLoadingMissions(false)
     }
   }
 
-  React.useEffect(() => {
-    fetchGames()
-  }, [])
-
   const handleRequestSort = (
     _: React.MouseEvent<unknown>,
-    property: keyof GameResponse
+    property: keyof MissionRequest
   ) => {
     const isAsc = orderBy === property && order === TableOrder.ASC
     setOrder(isAsc ? TableOrder.DESC : TableOrder.ASC)
     setOrderBy(property)
   }
 
-  const handleClick = (game: GameResponse) => {
+  const handleClickInfoModal = (
+    missionId: string,
+    missionDescription: string
+  ) => {
     if (onSelect) {
-      onSelect(game.id)
+      onSelect(missionId, missionDescription)
     } else {
-      setSelectedGame(game)
-      setOpenEditor(true)
+      console.log("open mod al", missionId)
+      setSelectedMissionId(missionId)
+      setOpenModal(true)
     }
   }
 
@@ -108,18 +125,18 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - games.length) : 0
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - missions.length) : 0
 
   const visibleRows = React.useMemo(
     () =>
-      stableSort(games, getComparator(order, orderBy)).slice(
+      stableSort(missions, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage, games]
+    [order, orderBy, page, rowsPerPage, missions]
   )
 
-  if (loadingGames) {
+  if (loadingMissions) {
     return (
       <Box
         sx={{
@@ -138,21 +155,39 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
     return <div>{error}</div>
   }
 
-  if (games.length === 0) {
-    return <div>No games found</div>
+  if (missions.length === 0) {
+    return <div>No missions found</div>
   }
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <TableContainer sx={{ paddingX: 2 }}>
-        <Table
-          // sx={{ minWidth: 750 }}
-          aria-labelledby="tableTitle"
+    <MissionListContainer>
+      <Toolbar>
+        <Typography
+          sx={{ flex: "1 1 100%" }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
         >
+          Missions
+        </Typography>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Add fontSize="small" />}
+          onClick={() => {
+            setSelectedMissionId(null)
+            setOpenModal(true)
+          }}
+        >
+          mission
+        </Button>
+      </Toolbar>
+      <MissionListTableContainer>
+        <MissionListTable>
           <TableHeader
             order={order}
             orderBy={orderBy}
-            headCells={headerRow}
+            headCells={headerData}
             onRequestSort={handleRequestSort}
           />
           <TableBody>
@@ -162,7 +197,11 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
               return (
                 <TableRow
                   hover
-                  onClick={() => handleClick(row)}
+                  onClick={() =>
+                    handleClickInfoModal(row.id || "", row.description || "")
+                  }
+                  role="checkbox"
+                  tabIndex={-1}
                   key={index}
                   sx={{ cursor: "pointer" }}
                 >
@@ -171,7 +210,6 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
                     id={labelId}
                     scope="row"
                     padding="none"
-                    sx={{ minWidth: "300px" }}
                   >
                     {row.id}
                   </TableCell>
@@ -180,18 +218,16 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
                     id={labelId}
                     scope="row"
                     padding="none"
-                    sx={{ minWidth: "100px" }}
                   >
-                    {row.name}
+                    {row.description}
                   </TableCell>
                   <TableCell
                     component="th"
                     id={labelId}
                     scope="row"
                     padding="none"
-                    sx={{ minWidth: "50px" }}
                   >
-                    {row.parcel}
+                    {row.campaign_key}
                   </TableCell>
                 </TableRow>
               )
@@ -206,36 +242,36 @@ const GameList = ({ onSelect }: { onSelect?: (gameId: string) => void }) => {
               </TableRow>
             )}
           </TableBody>
-        </Table>
-      </TableContainer>
+        </MissionListTable>
+      </MissionListTableContainer>
       <TablePagination
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
         component="div"
-        count={games.length || 0}
+        count={missions.length || 0}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
       <Dialog
-        open={openEditor}
-        onClose={() => setOpenEditor(false)}
-        maxWidth="xs"
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>Game</DialogTitle>
+        <DialogTitle>Mission Info</DialogTitle>
         <DialogContent>
-          <GameEditor
-            gameData={selectedGame}
+          <MissionEditor
+            missionId={selectedMissionId || ""}
             onUpdate={() => {
-              setOpenEditor(false)
-              fetchGames()
+              fetchMissions()
+              !selectedMissionId && setOpenModal(false)
             }}
           />
         </DialogContent>
       </Dialog>
-    </Box>
+    </MissionListContainer>
   )
 }
 
-export { GameList }
+export { MissionList }

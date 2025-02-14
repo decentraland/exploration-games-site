@@ -66,4 +66,20 @@ export const gameService = {
       throw error
     }
   },
+  async createGame(gameData: GameRequest): Promise<void> {
+    try {
+      await api.fetch(
+        `/api/games`,
+        new Options()
+          .authorization({ sign: true })
+          .metadata({ signer: "decentraland-kernel-scene" })
+          .method("POST")
+          .json(gameData)
+      )
+      return
+    } catch (error) {
+      console.error("Error creating game:", error)
+      throw error
+    }
+  },
 }

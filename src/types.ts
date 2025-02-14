@@ -1,4 +1,4 @@
-type Mission = {
+type MissionRequest = {
   id: string
   description: string
   campaign_key: string
@@ -6,7 +6,7 @@ type Mission = {
 }
 
 type MissionData = {
-  mission: Mission
+  mission: MissionRequest
   challenges: ChallengeResponse[]
   games: GameResponse[]
 }
@@ -44,7 +44,7 @@ type GameRequest = {
 }
 
 export type {
-  Mission,
+  MissionRequest,
   ChallengeRequest,
   GameRequest,
   GameResponse,

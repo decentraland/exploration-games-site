@@ -26,4 +26,20 @@ export const challengeService = {
       throw error
     }
   },
+  async createChallenge(challenge: ChallengeRequest): Promise<void> {
+    try {
+      await api.fetch(
+        `/api/challenges`,
+        new Options()
+          .authorization({ sign: true })
+          .metadata({ signer: "decentraland-kernel-scene" })
+          .method("POST")
+          .json(challenge)
+      )
+      return
+    } catch (error) {
+      console.error("Error creating challenge:", error)
+      throw error
+    }
+  },
 }
