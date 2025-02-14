@@ -27,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/decentraland/exploration-games-site/issues"
   },
-  "homepage": "https://github.com/decentraland/exploration-games-site#readme",
+  "homepage": "",
   "engines": {
     "node": "20.x",
     "npm": "8.x || 9.x || 10.x"
@@ -35,15 +35,11 @@
   "dependencies": {
     "@dcl/crypto": "^3.4.5",
     "@dcl/ui-env": "^1.4.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
-    "@mui/material": "^5.16.14",
     "date-fns": "^3.6.0",
     "decentraland-connect": "^7.0.1",
-    "decentraland-gatsby": "^6.28.1",
-    "decentraland-ui2": "^0.10.0",
+    "decentraland-gatsby": "^6.35.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
@@ -82,6 +78,6 @@
   "keywords": [
     "decentraland",
     "dapps",
-    "template"
+    "exploration-games"
   ]
 }
