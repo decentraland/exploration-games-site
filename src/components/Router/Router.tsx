@@ -21,7 +21,10 @@ const router = createBrowserRouter(
   ),
   {
     // TODO: apply the final basename
-    basename: process.env.NODE_ENV === "production" ? "/mini-game" : undefined,
+    // basename: process.env.NODE_ENV === "production" ? "/mini-game" : "",
+    basename: /^decentraland.(zone|org|today)$/.test(window.location.host)
+      ? "/mini-game"
+      : "",
   }
 )
 
