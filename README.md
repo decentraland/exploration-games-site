@@ -1,4 +1,4 @@
-# exploration-games
+ # exploration-games
 
 ![Decentraland Cover](https://decentraland.org/og.jpg)
 
