@@ -1,20 +1,21 @@
 import { useNavigate } from "react-router-dom"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { AppBar, Box, Button, Container, Toolbar } from "decentraland-ui2"
 import { locations } from "../../modules/Locations"
-
 const pages = [
   {
-    name: "Missions",
+    name: "missions",
     path: locations.missions(),
   },
   {
-    name: "Games",
+    name: "games",
     path: locations.games(),
   },
 ]
 
 const Menu = () => {
   const navigate = useNavigate()
+  const l = useFormatMessage()
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -29,7 +30,7 @@ const Menu = () => {
                 }}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                {page.name}
+                {l(page.name)}
               </Button>
             ))}
           </Box>

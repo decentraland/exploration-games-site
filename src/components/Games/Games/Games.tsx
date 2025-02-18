@@ -2,6 +2,7 @@ import * as React from "react"
 import { useCallback } from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Add, Edit } from "@mui/icons-material"
 import {
   Box,
@@ -33,7 +34,6 @@ import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
 import { TableHeader } from "../../Tables/TableHeader.tsx"
 import { getComparator, stableSort } from "../../Tables/utils.ts"
 import { GameEditor } from "../GameEditor/GameEditor.tsx"
-
 const headerRow: readonly HeadCell<GameResponse>[] = [
   {
     id: "id",
@@ -67,6 +67,8 @@ const Games = React.memo(
     // const [openCreator, setOpenCreator] = React.useState(false)
     const [loadingGames, setLoadingGames] = React.useState(true)
     const [error, setError] = React.useState<string | null>(null)
+
+    const l = useFormatMessage()
 
     if (!account && !loading) {
       return <Navigate to={locations.signIn()} />
@@ -173,7 +175,7 @@ const Games = React.memo(
             id="tableTitle"
             component="div"
           >
-            Games
+            {l("games")}
           </Typography>
           <Button
             variant="contained"
@@ -184,7 +186,7 @@ const Games = React.memo(
               setOpenEditor(true)
             }}
           >
-            game
+            {l("game")}
           </Button>
         </Toolbar>
         <GameListContainer>

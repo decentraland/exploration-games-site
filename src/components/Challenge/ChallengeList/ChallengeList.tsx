@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/default
 import React, { useCallback, useState } from "react"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Add } from "@mui/icons-material"
 import {
   Box,
@@ -29,6 +30,8 @@ const ChallengeList = React.memo(
     const [challengeData, setChallengeData] =
       useState<ChallengeEditorDataProps | null>(null)
 
+    const l = useFormatMessage()
+
     const createChallengeHandler = useCallback(() => {
       setChallengeData({
         mission_id: missionData?.id,
@@ -51,7 +54,7 @@ const ChallengeList = React.memo(
             id="tableTitle"
             component="div"
           >
-            Challenges
+            {l("challenges")}
           </Typography>
           <Button
             variant="contained"
@@ -59,7 +62,7 @@ const ChallengeList = React.memo(
             startIcon={<Add />}
             onClick={createChallengeHandler}
           >
-            challenge
+            {l("challenge")}
           </Button>
         </Toolbar>
         <List>

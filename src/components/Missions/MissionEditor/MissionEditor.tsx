@@ -1,4 +1,5 @@
 import * as React from "react"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import {
   Box,
   CircularProgress,
@@ -30,6 +31,8 @@ const MissionEditor = React.memo(
     const [loadingMissionData, setLoadingMissionData] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
     const create = !missionId
+
+    const l = useFormatMessage()
 
     React.useEffect(() => {
       fetchMissionData()
@@ -135,7 +138,7 @@ const MissionEditor = React.memo(
             disabled={!dataChanged}
             onClick={() => saveClickHandler()}
           >
-            Save changes
+            {l("save_changes")}
           </SaveButton>
         </Container>
         <Divider />

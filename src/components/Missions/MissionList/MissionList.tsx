@@ -2,6 +2,7 @@ import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Add } from "@mui/icons-material"
 import {
   Box,
@@ -70,6 +71,7 @@ const MissionList = React.memo(
     const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
       null
     )
+    const l = useFormatMessage()
 
     useEffect(() => {
       fetchMissions()
@@ -166,7 +168,7 @@ const MissionList = React.memo(
             id="tableTitle"
             component="div"
           >
-            Missions
+            {l("missions")}
           </Typography>
           <Button
             variant="contained"
@@ -177,7 +179,7 @@ const MissionList = React.memo(
               setOpenModal(true)
             }}
           >
-            mission
+            {l("mission")}
           </Button>
         </Toolbar>
         <TableContainer>

@@ -1,1 +1,9 @@
-{}
+{
+  "games": "Games",
+  "missions": "Missions",
+  "challenges": "Challenges",
+  "game": "game",
+  "mission": "mission",
+  "challenge": "challenge",
+  "save_changes": "save changes"
+}
