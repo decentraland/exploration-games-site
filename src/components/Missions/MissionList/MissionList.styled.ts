@@ -1,15 +1,15 @@
 import { Box, Table, styled } from "decentraland-ui2"
 
-const MissionListContainer = styled(Box)({
+const Container = styled(Box)({
   marginBottom: "20px",
 })
 
-const MissionListTableContainer = styled(Box)({
+const TableContainer = styled(Box)({
   padding: "0 20px",
 })
 
-const MissionListTable = styled(Table)({
+const MissionsTable = styled(Table)({
   minWidth: "700px",
 })
 
-export { MissionListContainer, MissionListTableContainer, MissionListTable }
+export { Container, TableContainer, MissionsTable }

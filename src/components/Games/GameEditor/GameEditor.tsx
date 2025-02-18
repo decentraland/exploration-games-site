@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { TextField, Typography } from "decentraland-ui2"
 import { gameApi } from "../../../api/gameApi"
 import { GameEditorProps } from "./GameEditor.types"
@@ -22,7 +22,7 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
     parseInt(initData?.parcel?.split(",")[1] || "0")
   )
 
-  const saveClickHandler = async () => {
+  const saveClickHandler = useCallback(async () => {
     if (!(name && parcelX && parcelY)) return
 
     const body = {
@@ -38,7 +38,7 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
     }
 
     onUpdate && onUpdate()
-  }
+  }, [create, initData?.id, name, parcelX, parcelY, onUpdate])
 
   if (!initData) return null
 

@@ -1,6 +1,6 @@
 import { Box, Button, styled } from "decentraland-ui2"
 
-const ChallengeEditorContainer = styled(Box)({
+const Container = styled(Box)({
   display: "flex",
   flexDirection: "column",
   gap: "10px",
@@ -12,4 +12,4 @@ const SaveButton = styled(Button)({
   alignSelf: "flex-end",
 })
 
-export { ChallengeEditorContainer, SaveButton }
+export { Container, SaveButton }

@@ -9,7 +9,7 @@ import { challengeApi } from "../../../api/challengeApi"
 import { ChallengeRequest } from "../../../types"
 import { Games } from "../../Games/Games/Games"
 import { MissionList } from "../../Missions/MissionList/MissionList"
-import { ChallengeEditorContainer, SaveButton } from "./ChallengeEditor.styled"
+import { Container, SaveButton } from "./ChallengeEditor.styled"
 
 const ChallengeEditor = React.memo(
   ({ challengeData, onUpdate }: ChallengeEditorProps) => {
@@ -76,14 +76,11 @@ const ChallengeEditor = React.memo(
       onUpdate && onUpdate()
     }
 
-    const onGameSelect = useCallback(
-      (gameId: string, gameName: string) => {
-        setOpenGames(false)
-        gameId && setGameId(gameId)
-        gameName && setGameName(gameName)
-      },
-      [gameId, gameName]
-    )
+    const onGameSelect = useCallback((gameId: string, gameName: string) => {
+      setOpenGames(false)
+      gameId && setGameId(gameId)
+      gameName && setGameName(gameName)
+    }, [])
 
     const onMissionSelect = useCallback(
       (missionId: string, missionName: string) => {
@@ -91,7 +88,7 @@ const ChallengeEditor = React.memo(
         missionId && setMissionId(missionId)
         missionName && setMissionName(missionName)
       },
-      [setMissionId, setMissionName, setOpenMissions]
+      []
     )
 
     const dataChanged = create
@@ -100,10 +97,12 @@ const ChallengeEditor = React.memo(
         gameId !== baseData?.game_id ||
         missionId !== baseData?.mission_id ||
         targetLevel !== baseData?.target_level ||
-        JSON.stringify(data) !== JSON.stringify(baseData?.data)
+        (JSON.stringify(data) === "{}"
+          ? baseData?.data
+          : JSON.stringify(data) !== JSON.stringify(baseData?.data))
 
     return (
-      <ChallengeEditorContainer>
+      <Container>
         <TextField
           label="Mission (click to select)"
           variant="standard"
@@ -195,7 +194,7 @@ const ChallengeEditor = React.memo(
             <MissionList onSelect={onMissionSelect} />
           </DialogContent>
         </Dialog>
-      </ChallengeEditorContainer>
+      </Container>
     )
   }
 )
