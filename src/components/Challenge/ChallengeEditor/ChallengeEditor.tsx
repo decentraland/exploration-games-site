@@ -1,6 +1,5 @@
 import * as React from "react"
 import { useCallback, useMemo, useState } from "react"
-import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Dialog, DialogContent, TextField } from "decentraland-ui2"
 import {
   ChallengeEditorDataProps,
@@ -10,12 +9,11 @@ import { challengeApi } from "../../../api/challengeApi"
 import { ChallengeRequest } from "../../../types"
 import { Games } from "../../Games/Games/Games"
 import { MissionList } from "../../Missions/MissionList/MissionList"
-import { Container, SaveButton } from "./ChallengeEditor.styled"
+import { SaveButton } from "../../SaveButton/SaveButton"
+import { Container } from "./ChallengeEditor.styled"
 
 const ChallengeEditor = React.memo(
   ({ challengeData, onUpdate }: ChallengeEditorProps) => {
-    const l = useFormatMessage()
-
     const emptyChallenge = useMemo(
       () =>
         ({
@@ -174,9 +172,7 @@ const ChallengeEditor = React.memo(
           }
           focused={JSON.stringify(data) !== JSON.stringify(baseData?.data)}
         />
-        <SaveButton disabled={!dataChanged} onClick={() => onSaveHandler()}>
-          {l("save_changes")}
-        </SaveButton>
+        <SaveButton disabled={!dataChanged} onClick={() => onSaveHandler()} />
         <Dialog
           open={openGames}
           onClose={() => setOpenGames(false)}

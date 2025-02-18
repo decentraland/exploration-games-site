@@ -4,7 +4,7 @@ import {
   createRoutesFromElements,
 } from "react-router-dom"
 import { locations } from "../../modules/Locations"
-import { Games } from "../Games/Games/Games"
+import { GamesScreen } from "../Games/GamesScreen/GamesScreen"
 import { Layout } from "../Layout/Layout"
 import { SignIn } from "../Layout/SignIn"
 import { MissionsScreen } from "../Missions/MissionsScreen/MissionsScreen"
@@ -14,7 +14,7 @@ const router = createBrowserRouter(
     <Route>
       <Route path={locations.root()} element={<Layout />}>
         <Route path={locations.signIn()} element={<SignIn />} />
-        <Route path={locations.games()} element={<Games />} />
+        <Route path={locations.games()} element={<GamesScreen />} />
         <Route path={locations.missions()} element={<MissionsScreen />} />
       </Route>
     </Route>

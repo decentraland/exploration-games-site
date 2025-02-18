@@ -3,10 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { Add } from "@mui/icons-material"
 import {
   Box,
-  Button,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -21,6 +19,8 @@ import {
 import { missionApi } from "../../../api/missionApi"
 import { locations } from "../../../modules/Locations"
 import { MissionRequest } from "../../../types"
+import { AddButton } from "../../AddButton/AddButton"
+import { SearchInput } from "../../SearchInput/SearchInput"
 import { HeadCell, TableOrder } from "../../Tables/Table.types"
 import { TableHeader } from "../../Tables/TableHeader"
 import { getComparator, stableSort } from "../../Tables/utils"
@@ -71,6 +71,7 @@ const MissionList = React.memo(
     const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
       null
     )
+    const [search, setSearch] = useState("")
     const l = useFormatMessage()
 
     useEffect(() => {
@@ -123,17 +124,22 @@ const MissionList = React.memo(
       []
     )
 
+    const filteredMissions = useMemo(() => {
+      return missions.filter((mission) =>
+        JSON.stringify(mission).toLowerCase().includes(search.toLowerCase())
+      )
+    }, [missions, search])
     // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows =
       page > 0 ? Math.max(0, (1 + page) * rowsPerPage - missions.length) : 0
 
     const visibleRows = useMemo(
       () =>
-        stableSort(missions, getComparator(order, orderBy)).slice(
+        stableSort(filteredMissions, getComparator(order, orderBy)).slice(
           page * rowsPerPage,
           page * rowsPerPage + rowsPerPage
         ),
-      [order, orderBy, page, rowsPerPage, missions]
+      [order, orderBy, page, rowsPerPage, filteredMissions]
     )
 
     if (loadingMissions) {
@@ -170,17 +176,18 @@ const MissionList = React.memo(
           >
             {l("missions")}
           </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<Add fontSize="small" />}
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <AddButton
             onClick={() => {
               setSelectedMissionId(null)
               setOpenModal(true)
             }}
           >
             {l("mission")}
-          </Button>
+          </AddButton>
         </Toolbar>
         <TableContainer>
           <MissionsTable>

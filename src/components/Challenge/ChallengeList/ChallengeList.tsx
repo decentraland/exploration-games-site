@@ -1,10 +1,8 @@
 // eslint-disable-next-line import/default
 import React, { useCallback, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { Add } from "@mui/icons-material"
 import {
   Box,
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -14,6 +12,7 @@ import {
   Toolbar,
   Typography,
 } from "decentraland-ui2"
+import { AddButton } from "../../AddButton/AddButton"
 import { ChallengeEditor } from "../ChallengeEditor/ChallengeEditor"
 import { ChallengeEditorDataProps } from "../ChallengeEditor/ChallengeEditor.typed"
 import { ChallengeListProps } from "./ChallengeList.types"
@@ -56,14 +55,9 @@ const ChallengeList = React.memo(
           >
             {l("challenges")}
           </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<Add />}
-            onClick={createChallengeHandler}
-          >
+          <AddButton onClick={createChallengeHandler}>
             {l("challenge")}
-          </Button>
+          </AddButton>
         </Toolbar>
         <List>
           {challengesData

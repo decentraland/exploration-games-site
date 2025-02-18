@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react"
-import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { TextField, Typography } from "decentraland-ui2"
 import { gameApi } from "../../../api/gameApi"
+import { SaveButton } from "../../SaveButton/SaveButton"
 import { GameEditorProps } from "./GameEditor.types"
-import { Container, SaveButton } from "./GameEditor.styled"
+import { Container } from "./GameEditor.styled"
 
 const EMPTY_GAME = {
   id: "",
@@ -23,7 +23,6 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
     parseInt(initData?.parcel?.split(",")[1] || "0")
   )
 
-  const l = useFormatMessage()
   const saveClickHandler = useCallback(async () => {
     if (!(name && parcelX && parcelY)) return
 
@@ -90,13 +89,7 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
         error={isNaN(parcelY)}
         helperText={!parcelY ? "Parcel Y is required" : ""}
       />
-      <SaveButton
-        variant="contained"
-        disabled={!dataChanged}
-        onClick={saveClickHandler}
-      >
-        {l("save_changes")}
-      </SaveButton>
+      <SaveButton disabled={!dataChanged} onClick={saveClickHandler} />
     </Container>
   )
 }

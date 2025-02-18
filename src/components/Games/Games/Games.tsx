@@ -3,10 +3,9 @@ import { useCallback } from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { Add, Edit } from "@mui/icons-material"
+import { Edit } from "@mui/icons-material"
 import {
   Box,
-  Button,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -30,10 +29,13 @@ import {
 import { gameApi } from "../../../api/gameApi.ts"
 import { locations } from "../../../modules/Locations.ts"
 import { GameResponse } from "../../../types.ts"
+import { AddButton } from "../../AddButton/AddButton.tsx"
+import { SearchInput } from "../../SearchInput/SearchInput.tsx"
 import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
 import { TableHeader } from "../../Tables/TableHeader.tsx"
 import { getComparator, stableSort } from "../../Tables/utils.ts"
 import { GameEditor } from "../GameEditor/GameEditor.tsx"
+
 const headerRow: readonly HeadCell<GameResponse>[] = [
   {
     id: "id",
@@ -77,6 +79,7 @@ const Games = React.memo(
     const [orderBy, setOrderBy] = React.useState<keyof GameResponse>("name")
     const [page, setPage] = React.useState(0)
     const [rowsPerPage, setRowsPerPage] = React.useState(25)
+    const [search, setSearch] = React.useState("")
 
     const fetchGames = useCallback(async () => {
       try {
@@ -130,17 +133,23 @@ const Games = React.memo(
       []
     )
 
+    const filteredGames = React.useMemo(() => {
+      return games.filter((game) =>
+        JSON.stringify(game).toLowerCase().includes(search.toLowerCase())
+      )
+    }, [games, search])
+
     // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows =
       page > 0 ? Math.max(0, (1 + page) * rowsPerPage - games.length) : 0
 
     const visibleRows = React.useMemo(
       () =>
-        stableSort(games, getComparator(order, orderBy)).slice(
+        stableSort(filteredGames, getComparator(order, orderBy)).slice(
           page * rowsPerPage,
           page * rowsPerPage + rowsPerPage
         ),
-      [order, orderBy, page, rowsPerPage, games]
+      [order, orderBy, page, rowsPerPage, filteredGames]
     )
 
     if (loadingGames) {
@@ -177,17 +186,18 @@ const Games = React.memo(
           >
             {l("games")}
           </Typography>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<Add fontSize="small" />}
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <AddButton
             onClick={() => {
               setSelectedGame(null)
               setOpenEditor(true)
             }}
           >
             {l("game")}
-          </Button>
+          </AddButton>
         </Toolbar>
         <GameListContainer>
           <GameListTableContainer>
