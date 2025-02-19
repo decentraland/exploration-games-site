@@ -120,7 +120,7 @@ const ChallengeList = React.memo(
               challengeData={challengeData}
               onUpdate={() => {
                 setOpen(false)
-                onUpdate()
+                onUpdate && onUpdate()
               }}
             />
           </DialogContent>

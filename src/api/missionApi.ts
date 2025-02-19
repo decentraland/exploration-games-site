@@ -19,7 +19,7 @@ export const missionApi = {
         data: MissionRequest[]
       }
       if (!response.data?.length) {
-        throw new Error("Failed to fetch missions")
+        throw new Error("Fetching missions: no data")
       }
       return response.data
     } catch (error) {
@@ -41,7 +41,7 @@ export const missionApi = {
       }
 
       if (!response.data) {
-        throw new Error("Failed to fetch mission")
+        throw new Error("Fetching mission: no data")
       }
       return response.data
     } catch (error) {

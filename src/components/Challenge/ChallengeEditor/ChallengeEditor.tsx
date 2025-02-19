@@ -35,37 +35,34 @@ const ChallengeEditor = React.memo(
     )
     const [openGames, setOpenGames] = useState(false)
     const [openMissions, setOpenMissions] = useState(false)
-    const [missionId, setMissionId] = useState<string>(
-      baseData?.mission_id || ""
+    const [missionData, setMissionData] = useState<ChallengeEditorDataProps>(
+      baseData || emptyChallenge
     )
-    const [missionName, setMissionName] = useState<string>(
-      baseData?.missionName || ""
-    )
-    const [gameId, setGameId] = useState<string>(baseData?.game_id || "")
-    const [gameName, setGameName] = useState<string>(baseData?.gameName || "")
-    const [description, setDescription] = useState<string>(
-      baseData?.description || ""
-    )
-    const [targetLevel, setTargetLevel] = useState<number>(
-      baseData?.target_level || 0
-    )
-    const [data, setData] = useState(baseData?.data || {})
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [jsonInput, setJsonInput] = useState<string>(
-      JSON.stringify(data, null, 2)
+      JSON.stringify(missionData.data, null, 2)
     )
+
     const onSaveHandler = async () => {
-      if (!(description && gameId && missionId && targetLevel)) return
+      if (
+        !(
+          missionData.description &&
+          missionData.game_id &&
+          missionData.mission_id &&
+          missionData.target_level
+        )
+      )
+        return
 
       const body = {
-        description,
-        gameId,
-        missionId,
-        targetLevel,
+        description: missionData.description,
+        gameId: missionData.game_id,
+        missionId: missionData.mission_id,
+        targetLevel: missionData.target_level,
       } as ChallengeRequest
 
-      if (Object.keys(data).length > 0) {
-        body.data = data
+      if (Object.keys(missionData.data || {}).length > 0) {
+        body.data = missionData.data
       }
 
       if (!baseData?.id) {
@@ -77,39 +74,56 @@ const ChallengeEditor = React.memo(
       onUpdate && onUpdate()
     }
 
-    const onGameSelect = useCallback((gameId: string, gameName: string) => {
+    const onGameSelect = useCallback((game_id: string, gameName: string) => {
       setOpenGames(false)
-      gameId && setGameId(gameId)
-      gameName && setGameName(gameName)
+      setMissionData((data) => ({
+        ...data,
+        game_id,
+        gameName,
+      }))
     }, [])
 
     const onMissionSelect = useCallback(
-      (missionId: string, missionName: string) => {
+      (mission_id: string, missionName: string) => {
         setOpenMissions(false)
-        missionId && setMissionId(missionId)
-        missionName && setMissionName(missionName)
+        setMissionData((data) => ({
+          ...data,
+          mission_id,
+          missionName,
+        }))
       },
       []
     )
 
-    const dataChanged = create
-      ? gameId && missionId && description && targetLevel
-      : description !== baseData?.description ||
-        gameId !== baseData?.game_id ||
-        missionId !== baseData?.mission_id ||
-        targetLevel !== baseData?.target_level ||
-        (JSON.stringify(data) === "{}"
-          ? baseData?.data
-          : JSON.stringify(data) !== JSON.stringify(baseData?.data))
+    const missionChanged = missionData.mission_id !== baseData?.mission_id
+    const gameChanged = missionData.game_id !== baseData?.game_id
+    const descriptionChanged = missionData.description !== baseData?.description
+    const targetLevelChanged =
+      missionData.target_level !== baseData?.target_level
+    const dataChanged =
+      JSON.stringify(missionData.data) !== JSON.stringify(baseData?.data)
+
+    const newChanges = create
+      ? missionData.game_id &&
+        missionData.mission_id &&
+        missionData.description &&
+        missionData.target_level
+      : descriptionChanged ||
+          gameChanged ||
+          missionChanged ||
+          targetLevelChanged ||
+          JSON.stringify(missionData.data) === "{}"
+        ? baseData?.data
+        : dataChanged
 
     return (
       <Container>
         <TextField
           label="Mission (click to select)"
           variant="standard"
-          value={`${missionName} - ${missionId}`}
-          focused={missionId !== baseData?.mission_id}
-          color={missionId !== baseData?.mission_id ? "warning" : "secondary"}
+          value={`${missionData.missionName} - ${missionData.mission_id}`}
+          focused={missionChanged}
+          color={missionChanged ? "warning" : "secondary"}
           onClick={() => setOpenMissions(true)}
         />
         <TextField
@@ -118,31 +132,37 @@ const ChallengeEditor = React.memo(
           InputProps={{
             readOnly: true,
           }}
-          color={gameId !== baseData?.game_id ? "warning" : "secondary"}
-          focused={gameId !== baseData?.game_id}
-          value={`${gameName} - ${gameId}`}
+          color={gameChanged ? "warning" : "secondary"}
+          focused={gameChanged}
+          value={`${missionData.gameName} - ${missionData.game_id}`}
           onClick={() => setOpenGames(true)}
         />
         <TextField
           label="Description"
           variant="standard"
-          value={description}
-          focused={description !== baseData?.description}
-          color={
-            description !== baseData?.description ? "warning" : "secondary"
+          value={missionData.description}
+          focused={descriptionChanged}
+          color={descriptionChanged ? "warning" : "secondary"}
+          onChange={(e) =>
+            setMissionData((missionData) => ({
+              ...missionData,
+              description: e.target.value,
+            }))
           }
-          onChange={(e) => setDescription(e.target.value)}
         />
         <TextField
           label="Target Level"
           variant="standard"
           type="number"
-          value={targetLevel}
-          focused={targetLevel !== baseData?.target_level}
-          color={
-            targetLevel !== baseData?.target_level ? "warning" : "secondary"
+          value={missionData.target_level}
+          focused={targetLevelChanged}
+          color={targetLevelChanged ? "warning" : "secondary"}
+          onChange={(e) =>
+            setMissionData((missionData) => ({
+              ...missionData,
+              target_level: Number(e.target.value),
+            }))
           }
-          onChange={(e) => setTargetLevel(Number(e.target.value))}
         />
         <TextField
           label="Data in JSON format. Use {} for empty data"
@@ -158,21 +178,19 @@ const ChallengeEditor = React.memo(
             setJsonInput(inputValue)
             try {
               const parsedData = JSON.parse(inputValue)
-              setData(parsedData)
+              setMissionData((missionData) => ({
+                ...missionData,
+                data: parsedData,
+              }))
               setJsonError(null)
             } catch (error) {
               setJsonError("Invalid JSON format")
             }
           }}
-          color={
-            Object.keys(data).length > 0 &&
-            JSON.stringify(data) !== JSON.stringify(baseData?.data)
-              ? "warning"
-              : "secondary"
-          }
-          focused={JSON.stringify(data) !== JSON.stringify(baseData?.data)}
+          color={dataChanged ? "warning" : "secondary"}
+          focused={dataChanged}
         />
-        <SaveButton disabled={!dataChanged} onClick={() => onSaveHandler()} />
+        <SaveButton disabled={!newChanges} onClick={() => onSaveHandler()} />
         <Dialog
           open={openGames}
           onClose={() => setOpenGames(false)}

@@ -13,21 +13,22 @@ import { ChallengeList } from "../../Challenge/ChallengeList/ChallengeList"
 import { SaveButton } from "../../SaveButton/SaveButton"
 import { Container } from "./MissionEditor.styled"
 
+const EMPTY_DATA: MissionData = {
+  mission: {
+    id: "",
+    description: "",
+    campaign_key: "",
+  },
+  challenges: [],
+  games: [],
+}
+
 const MissionEditor = React.memo(
   ({ missionId, onUpdate }: MissionEditorProps) => {
-    const emptyServerData: MissionData = {
-      mission: {
-        id: "",
-        description: "",
-        campaign_key: "",
-      },
-      challenges: [],
-      games: [],
-    }
-    const [serverData, setServerData] =
-      React.useState<MissionData>(emptyServerData)
-    const [description, setDescription] = React.useState("")
-    const [campaignKey, setCampaignKey] = React.useState("")
+    const [serverData, setServerData] = React.useState<MissionData>(EMPTY_DATA)
+
+    const [missionData, setMissionData] =
+      React.useState<MissionData>(EMPTY_DATA)
     const [loadingMissionData, setLoadingMissionData] = React.useState(false)
     const [error, setError] = React.useState<string | null>(null)
     const create = !missionId
@@ -42,8 +43,7 @@ const MissionEditor = React.memo(
           setLoadingMissionData(true)
           const data = await missionApi.getMissionById(missionId)
           setServerData(data)
-          setDescription(data.mission.description)
-          setCampaignKey(data.mission.campaign_key)
+          setMissionData(data)
         } catch (err) {
           setError("Failed to fetch missions")
         } finally {
@@ -53,11 +53,14 @@ const MissionEditor = React.memo(
     }, [missionId])
 
     const saveClickHandler = React.useCallback(async () => {
-      if (!(description && campaignKey)) return
+      if (
+        !(missionData.mission.description && missionData.mission.campaign_key)
+      )
+        return
 
       const body = {
-        description,
-        campaign_key: campaignKey,
+        description: missionData.mission.description,
+        campaign_key: missionData.mission.campaign_key,
       }
 
       if (create) {
@@ -67,14 +70,7 @@ const MissionEditor = React.memo(
       }
       fetchMissionData()
       onUpdate && onUpdate()
-    }, [
-      description,
-      campaignKey,
-      create,
-      missionId,
-      fetchMissionData,
-      onUpdate,
-    ])
+    }, [missionData, create, missionId, fetchMissionData, onUpdate])
 
     if (loadingMissionData) {
       return (
@@ -95,11 +91,12 @@ const MissionEditor = React.memo(
       return <Box sx={{ color: "error.main" }}>{error}</Box>
     }
 
-    // if (!serverData) return null
+    const descriptionChanged =
+      missionData.mission.description !== serverData?.mission.description
+    const campaignKeyChanged =
+      missionData.mission.campaign_key !== serverData?.mission.campaign_key
 
-    const dataChanged =
-      description !== serverData?.mission.description ||
-      campaignKey !== serverData?.mission.campaign_key
+    const dataChanged = descriptionChanged || campaignKeyChanged
 
     return (
       <React.Fragment>
@@ -110,31 +107,30 @@ const MissionEditor = React.memo(
           <TextField
             label="Description"
             variant="standard"
-            value={description}
-            focused={description !== serverData?.mission.description}
-            color={
-              description !== serverData?.mission.description
-                ? "warning"
-                : "success"
+            value={missionData.mission.description}
+            focused={descriptionChanged}
+            color={descriptionChanged ? "warning" : "success"}
+            onChange={(e) =>
+              setMissionData((data) => ({
+                ...data,
+                mission: { ...data.mission, description: e.target.value },
+              }))
             }
-            onChange={(e) => setDescription(e.target.value)}
           />
           <TextField
             label="Campaign Key"
             variant="standard"
-            color={
-              campaignKey !== serverData?.mission.campaign_key
-                ? "warning"
-                : "success"
+            color={campaignKeyChanged ? "warning" : "success"}
+            focused={campaignKeyChanged}
+            value={missionData.mission.campaign_key}
+            onChange={(e) =>
+              setMissionData((data) => ({
+                ...data,
+                mission: { ...data.mission, campaign_key: e.target.value },
+              }))
             }
-            focused={campaignKey !== serverData?.mission.campaign_key}
-            value={campaignKey}
-            onChange={(e) => setCampaignKey(e.target.value)}
           />
-          <SaveButton
-            disabled={!dataChanged}
-            onClick={() => saveClickHandler()}
-          />
+          <SaveButton disabled={!dataChanged} onClick={saveClickHandler} />
         </Container>
         <Divider />
         {serverData?.mission.id && (
@@ -142,7 +138,7 @@ const MissionEditor = React.memo(
             challengesData={serverData.challenges}
             gamesData={serverData.games}
             missionData={serverData.mission}
-            onUpdate={() => onUpdate && onUpdate()}
+            onUpdate={onUpdate}
           />
         )}
       </React.Fragment>

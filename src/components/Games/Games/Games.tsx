@@ -268,10 +268,10 @@ const Games = React.memo(
                 {emptyRows > 0 && (
                   <TableRow
                     style={{
-                      height: 53 * emptyRows,
+                      height: 21 * emptyRows,
                     }}
                   >
-                    <TableCell colSpan={6} />
+                    <TableCell colSpan={6} padding="none" />
                   </TableRow>
                 )}
               </TableBody>

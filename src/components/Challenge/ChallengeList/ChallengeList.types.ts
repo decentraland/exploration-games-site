@@ -4,7 +4,7 @@ type ChallengeListProps = {
   challengesData: ChallengeResponse[]
   gamesData: GameResponse[]
   missionData: MissionRequest
-  onUpdate: () => void
+  onUpdate?: () => void
 }
 
 export type { ChallengeListProps }

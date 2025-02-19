@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import {
+  Address,
   Box,
   CircularProgress,
   Dialog,
@@ -199,42 +200,20 @@ const MissionList = React.memo(
             />
             <TableBody>
               {visibleRows.map((row, index) => {
-                const labelId = `enhanced-table-checkbox-${index}`
-
                 return (
                   <TableRow
                     hover
                     onClick={() =>
                       handleClickInfoModal(row.id || "", row.description || "")
                     }
-                    role="checkbox"
                     tabIndex={-1}
                     key={index}
                     sx={{ cursor: "pointer" }}
                   >
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.id}
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.description}
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.campaign_key}
+                    <TableCell padding="none">{row.id}</TableCell>
+                    <TableCell padding="none">{row.description}</TableCell>
+                    <TableCell padding="none">
+                      <Address shorten value={row.campaign_key} />
                     </TableCell>
                   </TableRow>
                 )
@@ -242,10 +221,10 @@ const MissionList = React.memo(
               {emptyRows > 0 && (
                 <TableRow
                   style={{
-                    height: 53 * emptyRows,
+                    height: 21 * emptyRows,
                   }}
                 >
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={6} padding="none" />
                 </TableRow>
               )}
             </TableBody>

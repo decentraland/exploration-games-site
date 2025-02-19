@@ -19,7 +19,7 @@ export const gameApi = {
         data: GameResponse[]
       }
       if (!response.data) {
-        throw new Error("Failed to fetch games")
+        throw new Error("Fetching games: no data")
       }
       return response.data
     } catch (error) {
@@ -41,7 +41,7 @@ export const gameApi = {
       }
 
       if (!response.data) {
-        throw new Error("Failed to fetch game")
+        throw new Error("Fetching game: no data")
       }
       return response.data
     } catch (error) {
