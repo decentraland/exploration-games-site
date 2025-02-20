@@ -1,4 +1,6 @@
 import * as React from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import {
   Box,
   CircularProgress,
@@ -25,19 +27,20 @@ const EMPTY_DATA: MissionData = {
 
 const MissionEditor = React.memo(
   ({ missionId, onUpdate }: MissionEditorProps) => {
-    const [serverData, setServerData] = React.useState<MissionData>(EMPTY_DATA)
+    const [serverData, setServerData] = useState<MissionData>(EMPTY_DATA)
 
-    const [missionData, setMissionData] =
-      React.useState<MissionData>(EMPTY_DATA)
-    const [loadingMissionData, setLoadingMissionData] = React.useState(false)
-    const [error, setError] = React.useState<string | null>(null)
+    const [missionData, setMissionData] = useState<MissionData>(EMPTY_DATA)
+    const [loadingMissionData, setLoadingMissionData] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const create = !missionId
 
-    React.useEffect(() => {
+    const l = useFormatMessage()
+
+    useEffect(() => {
       fetchMissionData()
     }, [missionId])
 
-    const fetchMissionData = React.useCallback(async () => {
+    const fetchMissionData = useCallback(async () => {
       if (missionId) {
         try {
           setLoadingMissionData(true)
@@ -52,7 +55,7 @@ const MissionEditor = React.memo(
       }
     }, [missionId])
 
-    const saveClickHandler = React.useCallback(async () => {
+    const saveClickHandler = useCallback(async () => {
       if (
         !(missionData.mission.description && missionData.mission.campaign_key)
       )
@@ -91,21 +94,31 @@ const MissionEditor = React.memo(
       return <Box sx={{ color: "error.main" }}>{error}</Box>
     }
 
-    const descriptionChanged =
-      missionData.mission.description !== serverData?.mission.description
-    const campaignKeyChanged =
-      missionData.mission.campaign_key !== serverData?.mission.campaign_key
+    const descriptionChanged = useMemo(
+      () => missionData.mission.description !== serverData?.mission.description,
+      [missionData.mission.description, serverData?.mission.description]
+    )
+    const campaignKeyChanged = useMemo(
+      () =>
+        missionData.mission.campaign_key !== serverData?.mission.campaign_key,
+      [missionData.mission.campaign_key, serverData?.mission.campaign_key]
+    )
 
-    const dataChanged = descriptionChanged || campaignKeyChanged
+    const dataChanged = useMemo(
+      () => descriptionChanged || campaignKeyChanged,
+      [descriptionChanged, campaignKeyChanged]
+    )
 
     return (
-      <React.Fragment>
+      <>
         <Container>
           {!create && (
-            <Typography> Mission id: {serverData?.mission.id}</Typography>
+            <Typography>
+              {l("mission_editor.field_missionId")}: {serverData?.mission.id}
+            </Typography>
           )}
           <TextField
-            label="Description"
+            label={l("mission_editor.field_description")}
             variant="standard"
             value={missionData.mission.description}
             focused={descriptionChanged}
@@ -118,7 +131,7 @@ const MissionEditor = React.memo(
             }
           />
           <TextField
-            label="Campaign Key"
+            label={l("mission_editor.field_campaignKey")}
             variant="standard"
             color={campaignKeyChanged ? "warning" : "success"}
             focused={campaignKeyChanged}
@@ -141,7 +154,7 @@ const MissionEditor = React.memo(
             onUpdate={onUpdate}
           />
         )}
-      </React.Fragment>
+      </>
     )
   }
 )

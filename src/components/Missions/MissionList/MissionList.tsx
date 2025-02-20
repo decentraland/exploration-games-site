@@ -17,6 +17,7 @@ import {
   Toolbar,
   Typography,
 } from "decentraland-ui2"
+import { MissionListProps } from "./MissionList.typed"
 import { missionApi } from "../../../api/missionApi"
 import { locations } from "../../../modules/Locations"
 import { MissionRequest } from "../../../types"
@@ -49,216 +50,213 @@ const headerData: readonly HeadCell<MissionRequest>[] = [
   },
 ]
 
-const MissionList = React.memo(
-  ({
-    onSelect,
-  }: {
-    onSelect?: (missionId: string, missionName: string) => void
-  }) => {
-    const [account, accountState] = useAuthContext()
-    const loading = accountState.loading
-    const [missions, setMissions] = useState<MissionRequest[]>([])
-    const [loadingMissions, setLoadingMissions] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+const MissionList = React.memo(({ onSelect }: MissionListProps) => {
+  const [account, accountState] = useAuthContext()
+  const loading = accountState.loading
+  const [missions, setMissions] = useState<MissionRequest[]>([])
+  const [loadingMissions, setLoadingMissions] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    if (!account && !loading) {
-      return <Navigate to={locations.signIn()} />
+  if (!account && !loading) {
+    return <Navigate to={locations.signIn()} />
+  }
+  const [order, setOrder] = useState<TableOrder>(TableOrder.ASC)
+  const [orderBy, setOrderBy] = useState<keyof MissionRequest>("description")
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(25)
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
+    null
+  )
+  const [search, setSearch] = useState("")
+  const l = useFormatMessage()
+
+  useEffect(() => {
+    fetchMissions()
+  }, [])
+
+  const fetchMissions = useCallback(async () => {
+    try {
+      setLoadingMissions(true)
+      const data = await missionApi.getAllMissions()
+      setMissions(data)
+    } catch (err) {
+      setError("Failed to fetch missions")
+    } finally {
+      setLoadingMissions(false)
     }
-    const [order, setOrder] = useState<TableOrder>(TableOrder.ASC)
-    const [orderBy, setOrderBy] = useState<keyof MissionRequest>("description")
-    const [page, setPage] = useState(0)
-    const [rowsPerPage, setRowsPerPage] = useState(25)
-    const [openModal, setOpenModal] = useState(false)
-    const [selectedMissionId, setSelectedMissionId] = useState<string | null>(
-      null
-    )
-    const [search, setSearch] = useState("")
-    const l = useFormatMessage()
+  }, [])
 
-    useEffect(() => {
-      fetchMissions()
-    }, [])
+  const handleRequestSort = useCallback(
+    (_: React.MouseEvent<unknown>, property: keyof MissionRequest) => {
+      const isAsc = orderBy === property && order === TableOrder.ASC
+      setOrder(isAsc ? TableOrder.DESC : TableOrder.ASC)
+      setOrderBy(property)
+    },
+    [order, orderBy]
+  )
 
-    const fetchMissions = async () => {
-      try {
-        setLoadingMissions(true)
-        const data = await missionApi.getAllMissions()
-        setMissions(data)
-      } catch (err) {
-        setError("Failed to fetch missions")
-      } finally {
-        setLoadingMissions(false)
+  const handleClickInfoModal = useCallback(
+    (missionId: string, missionDescription: string) => {
+      if (onSelect) {
+        onSelect(missionId, missionDescription)
+      } else {
+        console.log("open modal", missionId)
+        setSelectedMissionId(missionId)
+        setOpenModal(true)
       }
-    }
+    },
+    [onSelect]
+  )
 
-    const handleRequestSort = useCallback(
-      (_: React.MouseEvent<unknown>, property: keyof MissionRequest) => {
-        const isAsc = orderBy === property && order === TableOrder.ASC
-        setOrder(isAsc ? TableOrder.DESC : TableOrder.ASC)
-        setOrderBy(property)
-      },
-      [order, orderBy]
+  const handleChangePage = useCallback((_: unknown, newPage: number) => {
+    setPage(newPage)
+  }, [])
+
+  const handleChangeRowsPerPage = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10))
+      setPage(0)
+    },
+    []
+  )
+
+  const filteredMissions = useMemo(() => {
+    return missions.filter((mission) =>
+      JSON.stringify(mission).toLowerCase().includes(search.toLowerCase())
     )
+  }, [missions, search])
+  // Avoid a layout jump when reaching the last page with empty rows.
+  const emptyRows = useMemo(
+    () =>
+      page > 0 ? Math.max(0, (1 + page) * rowsPerPage - missions.length) : 0,
+    [page, rowsPerPage, missions]
+  )
 
-    const handleClickInfoModal = useCallback(
-      (missionId: string, missionDescription: string) => {
-        if (onSelect) {
-          onSelect(missionId, missionDescription)
-        } else {
-          console.log("open modal", missionId)
-          setSelectedMissionId(missionId)
-          setOpenModal(true)
-        }
-      },
-      [onSelect]
-    )
+  const visibleRows = useMemo(
+    () =>
+      stableSort(filteredMissions, getComparator(order, orderBy)).slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      ),
+    [order, orderBy, page, rowsPerPage, filteredMissions]
+  )
 
-    const handleChangePage = useCallback((_: unknown, newPage: number) => {
-      setPage(newPage)
-    }, [])
-
-    const handleChangeRowsPerPage = useCallback(
-      (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10))
-        setPage(0)
-      },
-      []
-    )
-
-    const filteredMissions = useMemo(() => {
-      return missions.filter((mission) =>
-        JSON.stringify(mission).toLowerCase().includes(search.toLowerCase())
-      )
-    }, [missions, search])
-    // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows =
-      page > 0 ? Math.max(0, (1 + page) * rowsPerPage - missions.length) : 0
-
-    const visibleRows = useMemo(
-      () =>
-        stableSort(filteredMissions, getComparator(order, orderBy)).slice(
-          page * rowsPerPage,
-          page * rowsPerPage + rowsPerPage
-        ),
-      [order, orderBy, page, rowsPerPage, filteredMissions]
-    )
-
-    if (loadingMissions) {
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "60vh",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      )
-    }
-
-    if (error) {
-      return <div>{error}</div>
-    }
-
-    if (missions.length === 0) {
-      return <div>No missions found</div>
-    }
-
+  if (loadingMissions) {
     return (
-      <Container>
-        <Toolbar>
-          <Typography
-            sx={{ flex: "1 1 100%" }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-          >
-            {l("missions")}
-          </Typography>
-          <SearchInput
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <AddButton
-            onClick={() => {
-              setSelectedMissionId(null)
-              setOpenModal(true)
-            }}
-          >
-            {l("mission")}
-          </AddButton>
-        </Toolbar>
-        <TableContainer>
-          <MissionsTable>
-            <TableHeader
-              order={order}
-              orderBy={orderBy}
-              headCells={headerData}
-              onRequestSort={handleRequestSort}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                return (
-                  <TableRow
-                    hover
-                    onClick={() =>
-                      handleClickInfoModal(row.id || "", row.description || "")
-                    }
-                    tabIndex={-1}
-                    key={index}
-                    sx={{ cursor: "pointer" }}
-                  >
-                    <TableCell padding="none">{row.id}</TableCell>
-                    <TableCell padding="none">{row.description}</TableCell>
-                    <TableCell padding="none">
-                      <Address shorten value={row.campaign_key} />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 21 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} padding="none" />
-                </TableRow>
-              )}
-            </TableBody>
-          </MissionsTable>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          component="div"
-          count={missions.length || 0}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-        <Dialog
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>Mission Info</DialogTitle>
-          <DialogContent>
-            <MissionEditor
-              missionId={selectedMissionId || ""}
-              onUpdate={() => {
-                fetchMissions()
-                !selectedMissionId && setOpenModal(false)
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      </Container>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "60vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     )
   }
-)
+
+  if (error) {
+    return <div>{error}</div>
+  }
+
+  if (missions.length === 0) {
+    return <div>No missions found</div>
+  }
+
+  return (
+    <Container>
+      <Toolbar>
+        <Typography
+          sx={{ flex: "1 1 100%" }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
+          {l("mission_list.missions")}
+        </Typography>
+        <SearchInput
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <AddButton
+          onClick={() => {
+            setSelectedMissionId(null)
+            setOpenModal(true)
+          }}
+        >
+          {l("mission_list.mission")}
+        </AddButton>
+      </Toolbar>
+      <TableContainer>
+        <MissionsTable>
+          <TableHeader
+            order={order}
+            orderBy={orderBy}
+            headCells={headerData}
+            onRequestSort={handleRequestSort}
+          />
+          <TableBody>
+            {visibleRows.map((row, index) => {
+              return (
+                <TableRow
+                  hover
+                  onClick={() =>
+                    handleClickInfoModal(row.id || "", row.description || "")
+                  }
+                  tabIndex={-1}
+                  key={index}
+                  sx={{ cursor: "pointer" }}
+                >
+                  <TableCell padding="none">{row.id}</TableCell>
+                  <TableCell padding="none">{row.description}</TableCell>
+                  <TableCell padding="none">
+                    <Address shorten value={row.campaign_key} />
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+            {emptyRows > 0 && (
+              <TableRow
+                style={{
+                  height: 21 * emptyRows,
+                }}
+              >
+                <TableCell colSpan={6} padding="none" />
+              </TableRow>
+            )}
+          </TableBody>
+        </MissionsTable>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+        component="div"
+        count={missions.length || 0}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>{l("mission_list.dialog_title")}</DialogTitle>
+        <DialogContent>
+          <MissionEditor
+            missionId={selectedMissionId || ""}
+            onUpdate={() => {
+              fetchMissions()
+              !selectedMissionId && setOpenModal(false)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </Container>
+  )
+})
 
 export { MissionList }

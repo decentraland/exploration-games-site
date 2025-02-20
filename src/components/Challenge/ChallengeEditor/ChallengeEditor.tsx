@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useCallback, useMemo, useState } from "react"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Dialog, DialogContent, TextField } from "decentraland-ui2"
 import {
   ChallengeEditorDataProps,
@@ -7,24 +8,23 @@ import {
 } from "./ChallengeEditor.typed"
 import { challengeApi } from "../../../api/challengeApi"
 import { ChallengeRequest } from "../../../types"
-import { Games } from "../../Games/Games/Games"
+import { GamesList } from "../../Games/GamesList/GamesList"
 import { MissionList } from "../../Missions/MissionList/MissionList"
 import { SaveButton } from "../../SaveButton/SaveButton"
 import { Container } from "./ChallengeEditor.styled"
 
 const ChallengeEditor = React.memo(
   ({ challengeData, onUpdate }: ChallengeEditorProps) => {
-    const emptyChallenge = useMemo(
-      () =>
-        ({
-          id: "",
-          mission_id: challengeData?.mission_id || "",
-          game_id: "",
-          description: "",
-          target_level: 0,
-          missionName: challengeData?.missionName || "",
-          gameName: "",
-        }) as ChallengeEditorDataProps,
+    const emptyChallenge = useMemo<ChallengeEditorDataProps>(
+      () => ({
+        id: "",
+        mission_id: challengeData?.mission_id || "",
+        game_id: "",
+        description: "",
+        target_level: 0,
+        missionName: challengeData?.missionName || "",
+        gameName: "",
+      }),
       [challengeData]
     )
 
@@ -43,7 +43,8 @@ const ChallengeEditor = React.memo(
       JSON.stringify(missionData.data, null, 2)
     )
 
-    const onSaveHandler = async () => {
+    const l = useFormatMessage()
+    const onSaveHandler = useCallback(async () => {
       if (
         !(
           missionData.description &&
@@ -72,7 +73,7 @@ const ChallengeEditor = React.memo(
       }
 
       onUpdate && onUpdate()
-    }
+    }, [baseData?.id, missionData, onUpdate])
 
     const onGameSelect = useCallback((game_id: string, gameName: string) => {
       setOpenGames(false)
@@ -95,31 +96,73 @@ const ChallengeEditor = React.memo(
       []
     )
 
-    const missionChanged = missionData.mission_id !== baseData?.mission_id
-    const gameChanged = missionData.game_id !== baseData?.game_id
-    const descriptionChanged = missionData.description !== baseData?.description
-    const targetLevelChanged =
-      missionData.target_level !== baseData?.target_level
-    const dataChanged =
-      JSON.stringify(missionData.data) !== JSON.stringify(baseData?.data)
+    const missionChanged = useMemo(
+      () => missionData.mission_id !== baseData?.mission_id,
+      [missionData.mission_id, baseData?.mission_id]
+    )
+    const gameChanged = useMemo(
+      () => missionData.game_id !== baseData?.game_id,
+      [missionData.game_id, baseData?.game_id]
+    )
+    const descriptionChanged = useMemo(
+      () => missionData.description !== baseData?.description,
+      [missionData.description, baseData?.description]
+    )
+    const targetLevelChanged = useMemo(
+      () => missionData.target_level !== baseData?.target_level,
+      [missionData.target_level, baseData?.target_level]
+    )
+    const dataChanged = useMemo(
+      () => JSON.stringify(missionData.data) !== JSON.stringify(baseData?.data),
+      [missionData.data, baseData?.data]
+    )
 
-    const newChanges = create
-      ? missionData.game_id &&
-        missionData.mission_id &&
-        missionData.description &&
-        missionData.target_level
-      : descriptionChanged ||
-          gameChanged ||
-          missionChanged ||
-          targetLevelChanged ||
-          JSON.stringify(missionData.data) === "{}"
-        ? baseData?.data
-        : dataChanged
+    const newChanges = useMemo(() => {
+      return create
+        ? missionData.game_id &&
+            missionData.mission_id &&
+            missionData.description &&
+            missionData.target_level
+        : descriptionChanged ||
+            gameChanged ||
+            missionChanged ||
+            targetLevelChanged ||
+            JSON.stringify(missionData.data) === "{}"
+          ? baseData?.data
+          : dataChanged
+    }, [
+      create,
+      missionData,
+      baseData,
+      descriptionChanged,
+      gameChanged,
+      missionChanged,
+      targetLevelChanged,
+      dataChanged,
+    ])
+
+    const onDataFieldChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+        const inputValue = e.target.value
+        setJsonInput(inputValue)
+        try {
+          const parsedData = JSON.parse(inputValue)
+          setMissionData((missionData) => ({
+            ...missionData,
+            data: parsedData,
+          }))
+          setJsonError(null)
+        } catch (error) {
+          setJsonError(l("challenge_editor.invalid_json_format"))
+        }
+      },
+      []
+    )
 
     return (
       <Container>
         <TextField
-          label="Mission (click to select)"
+          label={l("challenge_editor.field_mission")}
           variant="standard"
           value={`${missionData.missionName} - ${missionData.mission_id}`}
           focused={missionChanged}
@@ -127,7 +170,7 @@ const ChallengeEditor = React.memo(
           onClick={() => setOpenMissions(true)}
         />
         <TextField
-          label="Game (click to select)"
+          label={l("challenge_editor.field_game")}
           variant="standard"
           InputProps={{
             readOnly: true,
@@ -138,7 +181,7 @@ const ChallengeEditor = React.memo(
           onClick={() => setOpenGames(true)}
         />
         <TextField
-          label="Description"
+          label={l("challenge_editor.field_description")}
           variant="standard"
           value={missionData.description}
           focused={descriptionChanged}
@@ -151,7 +194,7 @@ const ChallengeEditor = React.memo(
           }
         />
         <TextField
-          label="Target Level"
+          label={l("challenge_editor.field_target_level")}
           variant="standard"
           type="number"
           value={missionData.target_level}
@@ -165,7 +208,7 @@ const ChallengeEditor = React.memo(
           }
         />
         <TextField
-          label="Data in JSON format. Use {} for empty data"
+          label={l("challenge_editor.field_data")}
           variant="standard"
           type="text"
           multiline
@@ -173,24 +216,11 @@ const ChallengeEditor = React.memo(
           value={jsonInput}
           error={!!jsonError}
           helperText={jsonError}
-          onChange={(e) => {
-            const inputValue = e.target.value
-            setJsonInput(inputValue)
-            try {
-              const parsedData = JSON.parse(inputValue)
-              setMissionData((missionData) => ({
-                ...missionData,
-                data: parsedData,
-              }))
-              setJsonError(null)
-            } catch (error) {
-              setJsonError("Invalid JSON format")
-            }
-          }}
+          onChange={onDataFieldChange}
           color={dataChanged ? "warning" : "secondary"}
           focused={dataChanged}
         />
-        <SaveButton disabled={!newChanges} onClick={() => onSaveHandler()} />
+        <SaveButton disabled={!newChanges} onClick={onSaveHandler} />
         <Dialog
           open={openGames}
           onClose={() => setOpenGames(false)}
@@ -198,7 +228,7 @@ const ChallengeEditor = React.memo(
           fullWidth
         >
           <DialogContent>
-            <Games onSelect={onGameSelect} />
+            <GamesList onSelect={onGameSelect} />
           </DialogContent>
         </Dialog>
         <Dialog

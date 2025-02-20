@@ -1,7 +1,9 @@
-import { useCallback, useState } from "react"
+import * as React from "react"
+import { useCallback, useMemo, useState } from "react"
+import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { TextField, Typography } from "decentraland-ui2"
 import { gameApi } from "../../../api/gameApi"
-import { GameResponse } from "../../../types"
+import { GameRequest } from "../../../types"
 import { SaveButton } from "../../SaveButton/SaveButton"
 import { GameEditorProps } from "./GameEditor.types"
 import { Container } from "./GameEditor.styled"
@@ -9,48 +11,63 @@ import { Container } from "./GameEditor.styled"
 const EMPTY_GAME = {
   id: "",
   name: "",
-  parcel: "0,0",
+  x: 0,
+  y: 0,
 }
 
-const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
+const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
   const create = !gameData?.id
-  const initData = create ? EMPTY_GAME : gameData
+  const initData = create
+    ? EMPTY_GAME
+    : {
+        ...gameData,
+        x: parseInt(gameData.parcel.split(",")[0]),
+        y: parseInt(gameData.parcel.split(",")[1]),
+      }
 
-  const [data, setData] = useState<GameResponse>(initData)
+  const [data, setData] = useState<GameRequest>(initData)
+
+  const l = useFormatMessage()
 
   const saveClickHandler = useCallback(async () => {
-    if (!(data.name && data.parcel)) return
-
-    const body = {
-      name: data.name,
-      x: parseInt(data.parcel.split(",")[0]),
-      y: parseInt(data.parcel.split(",")[1]),
-    }
+    if (!(data.name && data.x && data.y)) return
 
     if (create) {
-      await gameApi.createGame(body)
+      await gameApi.createGame(data)
     } else {
-      await gameApi.updateGame(initData?.id, body)
+      await gameApi.updateGame(initData?.id, data)
     }
 
     onUpdate && onUpdate()
-  }, [create, initData?.id, data.name, data.parcel, onUpdate])
+  }, [create, initData?.id, data.name, data.x, data.y, onUpdate])
 
-  if (!initData) return null
+  const nameChanged = useMemo(
+    () => data.name !== initData.name,
+    [data.name, initData.name]
+  )
+  const parcelXChanged = useMemo(
+    () => data.x !== initData.x,
+    [data.x, initData.x]
+  )
+  const parcelYChanged = useMemo(
+    () => data.y !== initData.y,
+    [data.y, initData.y]
+  )
 
-  const nameChanged = data.name !== initData.name
-  const parcelXChanged =
-    data.parcel?.split(",")[0] !== initData.parcel?.split(",")[0]
-  const parcelYChanged =
-    data.parcel?.split(",")[1] !== initData.parcel?.split(",")[1]
-
-  const dataChanged = nameChanged || parcelXChanged || parcelYChanged
+  const dataChanged = useMemo(
+    () => nameChanged || parcelXChanged || parcelYChanged,
+    [nameChanged, parcelXChanged, parcelYChanged]
+  )
 
   return (
     <Container>
-      {!create && <Typography> Game ID: {initData.id}</Typography>}
+      {!create && (
+        <Typography>
+          {l("game_editor.id")}: {initData.id}
+        </Typography>
+      )}
       <TextField
-        label="Name"
+        label={l("game_editor.name")}
         variant="standard"
         value={data.name}
         focused={nameChanged}
@@ -58,40 +75,40 @@ const GameEditor = ({ gameData, onUpdate }: GameEditorProps) => {
         onChange={(e) => setData((data) => ({ ...data, name: e.target.value }))}
       />
       <TextField
-        label="Parcel X:"
+        label={l("game_editor.parcel_x")}
         variant="standard"
         type="number"
         color={parcelXChanged ? "warning" : "success"}
         focused={parcelXChanged}
-        value={data.parcel?.split(",")[0]}
+        value={data.x}
         onChange={(e) =>
           setData((data) => ({
             ...data,
-            parcel: `${e.target.value},${data.parcel?.split(",")[1]}`,
+            x: Number(e.target.value),
           }))
         }
-        error={isNaN(Number(data.parcel?.split(",")[0]))}
-        helperText={!data.parcel?.split(",")[0] ? "Parcel X is required" : ""}
+        error={isNaN(Number(data.x))}
+        helperText={!data.x ? l("game_editor.parcel_x_required") : ""}
       />
       <TextField
-        label="Parcel Y:"
+        label={l("game_editor.parcel_y")}
         variant="standard"
         type="number"
         color={parcelYChanged ? "warning" : "success"}
         focused={parcelYChanged}
-        value={data.parcel?.split(",")[1]}
+        value={data.y}
         onChange={(e) =>
           setData((data) => ({
             ...data,
-            parcel: `${data.parcel?.split(",")[0]},${e.target.value}`,
+            y: Number(e.target.value),
           }))
         }
-        error={isNaN(Number(data.parcel?.split(",")[1]))}
-        helperText={!data.parcel?.split(",")[1] ? "Parcel Y is required" : ""}
+        error={isNaN(Number(data.y))}
+        helperText={!data.y ? l("game_editor.parcel_y_required") : ""}
       />
       <SaveButton disabled={!dataChanged} onClick={saveClickHandler} />
     </Container>
   )
-}
+})
 
 export { GameEditor }

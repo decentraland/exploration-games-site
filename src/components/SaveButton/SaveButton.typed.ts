@@ -1,4 +1,6 @@
+import { MouseEvent } from "react"
+
 export type SaveButtonProps = {
   disabled: boolean
-  onClick: () => void
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void
 }

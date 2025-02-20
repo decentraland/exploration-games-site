@@ -1,4 +1,4 @@
-import { Box, Button, styled } from "decentraland-ui2"
+import { Box, styled } from "decentraland-ui2"
 
 const Container = styled(Box)({
   display: "flex",
@@ -7,9 +7,4 @@ const Container = styled(Box)({
   marginBottom: "20px",
 })
 
-const SaveButton = styled(Button)({
-  maxWidth: "250px",
-  alignSelf: "flex-end",
-})
-
-export { Container, SaveButton }
+export { Container }

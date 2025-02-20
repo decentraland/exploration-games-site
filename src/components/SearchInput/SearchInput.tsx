@@ -7,7 +7,7 @@ const SearchInput = React.memo(({ value, onChange }: SearchInputProps) => {
   const l = useFormatMessage()
   return (
     <TextField
-      label={l("search")}
+      label={l("search_input.search")}
       size="small"
       value={value}
       onChange={onChange}

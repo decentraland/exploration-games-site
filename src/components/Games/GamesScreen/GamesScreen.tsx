@@ -1,12 +1,13 @@
+import * as React from "react"
 import { Paper } from "decentraland-ui2"
-import { Games } from "../Games/Games"
+import { GamesList } from "../GamesList/GamesList"
 
-const GamesScreen = () => {
+const GamesScreen = React.memo(() => {
   return (
     <Paper>
-      <Games />
+      <GamesList />
     </Paper>
   )
-}
+})
 
 export { GamesScreen }

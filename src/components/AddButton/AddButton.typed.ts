@@ -1,6 +1,6 @@
 interface AddButtonProps {
   children: React.ReactNode
-  onClick: () => void
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 export type { AddButtonProps }

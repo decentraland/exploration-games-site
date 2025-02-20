@@ -7,7 +7,7 @@ const SaveButton = React.memo(({ disabled, onClick }: SaveButtonProps) => {
   const l = useFormatMessage()
   return (
     <SaveButtonStyled variant="contained" disabled={disabled} onClick={onClick}>
-      {l("save_changes")}
+      {l("save_button.save_changes")}
     </SaveButtonStyled>
   )
 })
