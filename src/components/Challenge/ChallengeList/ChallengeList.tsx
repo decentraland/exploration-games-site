@@ -19,7 +19,7 @@ import { ChallengeListProps } from "./ChallengeList.types"
 import { ChallengeJsonFormatted, GameLabel } from "./ChallengeList.styled"
 
 const ChallengeList = React.memo((props: ChallengeListProps) => {
-  const { challengesData, gamesData, missionData, onUpdate } = props
+  const { challenges, games, mission, onUpdate } = props
 
   const [open, setOpen] = useState(false)
   const [challengeData, setChallengeData] =
@@ -29,8 +29,8 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
 
   const createChallengeHandler = useCallback(() => {
     setChallengeData({
-      mission_id: missionData?.id,
-      missionName: missionData?.description,
+      mission_id: mission.id,
+      missionName: mission.description,
       game_id: "",
       gameName: "",
       description: "",
@@ -38,7 +38,7 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
       id: "",
     })
     setOpen(true)
-  }, [missionData])
+  }, [mission])
 
   return (
     <React.Fragment>
@@ -56,19 +56,19 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
         </AddButton>
       </Toolbar>
       <List>
-        {challengesData
+        {challenges
           .sort((a, b) => a.id.localeCompare(b.id))
           .map((challenge) => {
-            const game = gamesData.find((game) => game.id === challenge.game_id)
+            const game = games.find((game) => game.id === challenge.game_id)
 
             const onChallengeClickHandler = useCallback(() => {
               setChallengeData({
                 ...challenge,
-                missionName: missionData?.description,
+                missionName: mission.description,
                 gameName: game?.name,
               })
               setOpen(true)
-            }, [challenge, game, missionData])
+            }, [challenge, game, mission])
 
             return (
               <ListItem key={challenge.id}>

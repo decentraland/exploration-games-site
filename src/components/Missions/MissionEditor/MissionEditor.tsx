@@ -136,9 +136,9 @@ const MissionEditor = React.memo(
         <Divider />
         {serverData?.mission.id && (
           <ChallengeList
-            challengesData={serverData.challenges}
-            gamesData={serverData.games}
-            missionData={serverData.mission}
+            challenges={serverData.challenges}
+            games={serverData.games}
+            mission={serverData.mission}
             onUpdate={onUpdate}
           />
         )}

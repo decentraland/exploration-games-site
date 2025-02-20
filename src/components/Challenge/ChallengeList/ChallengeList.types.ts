@@ -1,9 +1,9 @@
 import { ChallengeResponse, GameResponse, MissionRequest } from "../../../types"
 
 type ChallengeListProps = {
-  challengesData: ChallengeResponse[]
-  gamesData: GameResponse[]
-  missionData: MissionRequest
+  challenges: ChallengeResponse[]
+  games: GameResponse[]
+  mission: MissionRequest
   onUpdate?: () => void
 }
 
