@@ -1,10 +1,11 @@
 import * as React from "react"
 import { useCallback, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { TextField, Typography } from "decentraland-ui2"
+import { Typography } from "decentraland-ui2"
 import { gameApi } from "../../../api/gameApi"
 import { GameRequest } from "../../../types"
 import { SaveButton } from "../../SaveButton/SaveButton"
+import { TextFieldStyled } from "../../TextFieldStyled/TextFieldStyled"
 import { GameEditorProps } from "./GameEditor.types"
 import { Container } from "./GameEditor.styled"
 
@@ -66,19 +67,15 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
           {l("game_editor.id")}: {initData.id}
         </Typography>
       )}
-      <TextField
+      <TextFieldStyled
         label={l("game_editor.name")}
-        variant="standard"
         value={data.name}
         focused={nameChanged}
-        color={nameChanged ? "warning" : "success"}
         onChange={(e) => setData((data) => ({ ...data, name: e.target.value }))}
       />
-      <TextField
+      <TextFieldStyled
         label={l("game_editor.parcel_x")}
-        variant="standard"
         type="number"
-        color={parcelXChanged ? "warning" : "success"}
         focused={parcelXChanged}
         value={data.x}
         onChange={(e) =>
@@ -90,11 +87,9 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
         error={isNaN(Number(data.x))}
         helperText={!data.x ? l("game_editor.parcel_x_required") : ""}
       />
-      <TextField
+      <TextFieldStyled
         label={l("game_editor.parcel_y")}
-        variant="standard"
         type="number"
-        color={parcelYChanged ? "warning" : "success"}
         focused={parcelYChanged}
         value={data.y}
         onChange={(e) =>

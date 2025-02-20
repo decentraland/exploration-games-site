@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useCallback, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { Dialog, DialogContent, TextField } from "decentraland-ui2"
+import { Dialog, DialogContent } from "decentraland-ui2"
 import {
   ChallengeEditorDataProps,
   ChallengeEditorProps,
@@ -11,6 +11,7 @@ import { ChallengeRequest } from "../../../types"
 import { GamesList } from "../../Games/GamesList/GamesList"
 import { MissionList } from "../../Missions/MissionList/MissionList"
 import { SaveButton } from "../../SaveButton/SaveButton"
+import { TextFieldStyled } from "../../TextFieldStyled/TextFieldStyled"
 import { Container } from "./ChallengeEditor.styled"
 
 const ChallengeEditor = React.memo(
@@ -161,31 +162,25 @@ const ChallengeEditor = React.memo(
 
     return (
       <Container>
-        <TextField
+        <TextFieldStyled
           label={l("challenge_editor.field_mission")}
-          variant="standard"
           value={`${missionData.missionName} - ${missionData.mission_id}`}
           focused={missionChanged}
-          color={missionChanged ? "warning" : "secondary"}
           onClick={() => setOpenMissions(true)}
         />
-        <TextField
+        <TextFieldStyled
           label={l("challenge_editor.field_game")}
-          variant="standard"
           InputProps={{
             readOnly: true,
           }}
-          color={gameChanged ? "warning" : "secondary"}
           focused={gameChanged}
           value={`${missionData.gameName} - ${missionData.game_id}`}
           onClick={() => setOpenGames(true)}
         />
-        <TextField
+        <TextFieldStyled
           label={l("challenge_editor.field_description")}
-          variant="standard"
           value={missionData.description}
           focused={descriptionChanged}
-          color={descriptionChanged ? "warning" : "secondary"}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -193,13 +188,11 @@ const ChallengeEditor = React.memo(
             }))
           }
         />
-        <TextField
+        <TextFieldStyled
           label={l("challenge_editor.field_target_level")}
-          variant="standard"
           type="number"
           value={missionData.target_level}
           focused={targetLevelChanged}
-          color={targetLevelChanged ? "warning" : "secondary"}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -207,9 +200,8 @@ const ChallengeEditor = React.memo(
             }))
           }
         />
-        <TextField
+        <TextFieldStyled
           label={l("challenge_editor.field_data")}
-          variant="standard"
           type="text"
           multiline
           rows={10}
@@ -217,7 +209,6 @@ const ChallengeEditor = React.memo(
           error={!!jsonError}
           helperText={jsonError}
           onChange={onDataFieldChange}
-          color={dataChanged ? "warning" : "secondary"}
           focused={dataChanged}
         />
         <SaveButton disabled={!newChanges} onClick={onSaveHandler} />

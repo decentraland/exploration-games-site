@@ -1,18 +1,13 @@
 import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import {
-  Box,
-  CircularProgress,
-  Divider,
-  TextField,
-  Typography,
-} from "decentraland-ui2"
+import { Box, CircularProgress, Divider, Typography } from "decentraland-ui2"
 import { MissionEditorProps } from "./MissionEditor.typed"
 import { missionApi } from "../../../api/missionApi"
 import { MissionData } from "../../../types"
 import { ChallengeList } from "../../Challenge/ChallengeList/ChallengeList"
 import { SaveButton } from "../../SaveButton/SaveButton"
+import { TextFieldStyled } from "../../TextFieldStyled/TextFieldStyled"
 import { Container } from "./MissionEditor.styled"
 
 const EMPTY_DATA: MissionData = {
@@ -75,6 +70,21 @@ const MissionEditor = React.memo(
       onUpdate && onUpdate()
     }, [missionData, create, missionId, fetchMissionData, onUpdate])
 
+    const descriptionChanged = useMemo(
+      () => missionData.mission.description !== serverData?.mission.description,
+      [missionData.mission.description, serverData?.mission.description]
+    )
+    const campaignKeyChanged = useMemo(
+      () =>
+        missionData.mission.campaign_key !== serverData?.mission.campaign_key,
+      [missionData.mission.campaign_key, serverData?.mission.campaign_key]
+    )
+
+    const dataChanged = useMemo(
+      () => descriptionChanged || campaignKeyChanged,
+      [descriptionChanged, campaignKeyChanged]
+    )
+
     if (loadingMissionData) {
       return (
         <Box
@@ -94,21 +104,6 @@ const MissionEditor = React.memo(
       return <Box sx={{ color: "error.main" }}>{error}</Box>
     }
 
-    const descriptionChanged = useMemo(
-      () => missionData.mission.description !== serverData?.mission.description,
-      [missionData.mission.description, serverData?.mission.description]
-    )
-    const campaignKeyChanged = useMemo(
-      () =>
-        missionData.mission.campaign_key !== serverData?.mission.campaign_key,
-      [missionData.mission.campaign_key, serverData?.mission.campaign_key]
-    )
-
-    const dataChanged = useMemo(
-      () => descriptionChanged || campaignKeyChanged,
-      [descriptionChanged, campaignKeyChanged]
-    )
-
     return (
       <>
         <Container>
@@ -117,12 +112,10 @@ const MissionEditor = React.memo(
               {l("mission_editor.field_missionId")}: {serverData?.mission.id}
             </Typography>
           )}
-          <TextField
+          <TextFieldStyled
             label={l("mission_editor.field_description")}
-            variant="standard"
             value={missionData.mission.description}
             focused={descriptionChanged}
-            color={descriptionChanged ? "warning" : "success"}
             onChange={(e) =>
               setMissionData((data) => ({
                 ...data,
@@ -130,10 +123,8 @@ const MissionEditor = React.memo(
               }))
             }
           />
-          <TextField
+          <TextFieldStyled
             label={l("mission_editor.field_campaignKey")}
-            variant="standard"
-            color={campaignKeyChanged ? "warning" : "success"}
             focused={campaignKeyChanged}
             value={missionData.mission.campaign_key}
             onChange={(e) =>
