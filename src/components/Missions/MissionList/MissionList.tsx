@@ -101,7 +101,6 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
       if (onSelect) {
         onSelect(missionId, missionDescription)
       } else {
-        console.log("open modal", missionId)
         setSelectedMissionId(missionId)
         setOpenModal(true)
       }

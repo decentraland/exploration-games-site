@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Dialog, DialogContent } from "decentraland-ui2"
 import {
@@ -8,6 +8,7 @@ import {
 } from "./ChallengeEditor.typed"
 import { challengeApi } from "../../../api/challengeApi"
 import { ChallengeRequest } from "../../../types"
+import { compareDataChanged } from "../../../utils/compareDataChanged"
 import { GamesList } from "../../Games/GamesList/GamesList"
 import { MissionList } from "../../Missions/MissionList/MissionList"
 import { SaveButton } from "../../SaveButton/SaveButton"
@@ -41,8 +42,13 @@ const ChallengeEditor = React.memo(
     )
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [jsonInput, setJsonInput] = useState<string>(
-      JSON.stringify(missionData.data, null, 2)
+      JSON.stringify(missionData.data || {}, null, 2)
     )
+    const [changedData, setChangedData] = useState<Record<string, boolean>>({})
+
+    useEffect(() => {
+      setChangedData(compareDataChanged(baseData, missionData))
+    }, [baseData, missionData])
 
     const l = useFormatMessage()
     const onSaveHandler = useCallback(async () => {
@@ -97,50 +103,9 @@ const ChallengeEditor = React.memo(
       []
     )
 
-    const missionChanged = useMemo(
-      () => missionData.mission_id !== baseData?.mission_id,
-      [missionData.mission_id, baseData?.mission_id]
-    )
-    const gameChanged = useMemo(
-      () => missionData.game_id !== baseData?.game_id,
-      [missionData.game_id, baseData?.game_id]
-    )
-    const descriptionChanged = useMemo(
-      () => missionData.description !== baseData?.description,
-      [missionData.description, baseData?.description]
-    )
-    const targetLevelChanged = useMemo(
-      () => missionData.target_level !== baseData?.target_level,
-      [missionData.target_level, baseData?.target_level]
-    )
-    const dataChanged = useMemo(
-      () => JSON.stringify(missionData.data) !== JSON.stringify(baseData?.data),
-      [missionData.data, baseData?.data]
-    )
-
-    const newChanges = useMemo(() => {
-      return create
-        ? missionData.game_id &&
-            missionData.mission_id &&
-            missionData.description &&
-            missionData.target_level
-        : descriptionChanged ||
-            gameChanged ||
-            missionChanged ||
-            targetLevelChanged ||
-            JSON.stringify(missionData.data) === "{}"
-          ? baseData?.data
-          : dataChanged
-    }, [
-      create,
-      missionData,
-      baseData,
-      descriptionChanged,
-      gameChanged,
-      missionChanged,
-      targetLevelChanged,
-      dataChanged,
-    ])
+    const hasNewChanges = useMemo(() => {
+      return Object.values(changedData).some((value) => value)
+    }, [changedData])
 
     const onDataFieldChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
@@ -165,7 +130,7 @@ const ChallengeEditor = React.memo(
         <TextFieldStyled
           label={l("challenge_editor.field_mission")}
           value={`${missionData.missionName} - ${missionData.mission_id}`}
-          focused={missionChanged}
+          focused={changedData["mission_id"]}
           onClick={() => setOpenMissions(true)}
         />
         <TextFieldStyled
@@ -173,14 +138,14 @@ const ChallengeEditor = React.memo(
           InputProps={{
             readOnly: true,
           }}
-          focused={gameChanged}
+          focused={changedData["game_id"]}
           value={`${missionData.gameName} - ${missionData.game_id}`}
           onClick={() => setOpenGames(true)}
         />
         <TextFieldStyled
           label={l("challenge_editor.field_description")}
           value={missionData.description}
-          focused={descriptionChanged}
+          focused={changedData["description"]}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -192,7 +157,7 @@ const ChallengeEditor = React.memo(
           label={l("challenge_editor.field_target_level")}
           type="number"
           value={missionData.target_level}
-          focused={targetLevelChanged}
+          focused={changedData["target_level"]}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -209,9 +174,9 @@ const ChallengeEditor = React.memo(
           error={!!jsonError}
           helperText={jsonError}
           onChange={onDataFieldChange}
-          focused={dataChanged}
+          focused={changedData["data"]}
         />
-        <SaveButton disabled={!newChanges} onClick={onSaveHandler} />
+        <SaveButton disabled={!hasNewChanges} onClick={onSaveHandler} />
         <Dialog
           open={openGames}
           onClose={() => setOpenGames(false)}

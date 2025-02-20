@@ -1,6 +1,7 @@
+import * as React from "react"
 import { TextField, TextFieldProps } from "decentraland-ui2"
 
-const TextFieldStyled = (props: TextFieldProps) => {
+const TextFieldStyled = React.memo((props: TextFieldProps) => {
   const { focused } = props
   return (
     <TextField
@@ -9,6 +10,6 @@ const TextFieldStyled = (props: TextFieldProps) => {
       color={focused ? "warning" : "success"}
     />
   )
-}
+})
 
 export { TextFieldStyled }

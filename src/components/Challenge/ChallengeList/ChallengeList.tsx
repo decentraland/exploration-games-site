@@ -20,6 +20,7 @@ import { ChallengeJsonFormatted, GameLabel } from "./ChallengeList.styled"
 
 const ChallengeList = React.memo((props: ChallengeListProps) => {
   const { challengesData, gamesData, missionData, onUpdate } = props
+
   const [open, setOpen] = useState(false)
   const [challengeData, setChallengeData] =
     useState<ChallengeEditorDataProps | null>(null)
@@ -50,7 +51,9 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
         >
           {l("challenge_list.challenges")}
         </Typography>
-        <AddButton onClick={createChallengeHandler}>{l("challenge")}</AddButton>
+        <AddButton onClick={createChallengeHandler}>
+          {l("challenge_list.challenge")}
+        </AddButton>
       </Toolbar>
       <List>
         {challengesData
@@ -110,7 +113,7 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Challenge</DialogTitle>
+        <DialogTitle>{l("challenge_list.challenge")}</DialogTitle>
         <DialogContent>
           <ChallengeEditor
             challengeData={challengeData}
