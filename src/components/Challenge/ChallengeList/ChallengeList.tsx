@@ -75,16 +75,16 @@ const ChallengeList = React.memo((props: ChallengeListProps) => {
                 <ListItemButton onClick={onChallengeClickHandler}>
                   <Box>
                     <Box>
-                      <Typography>
+                      <Typography component={"span"}>
                         {l("challenge_list.game")}:
-                        <GameLabel
-                          color={game?.id ? "success.main" : "error.main"}
-                        >
-                          {game?.id
-                            ? `${game?.name} (${game?.parcel})`
-                            : l("challenge_list.game_not_found")}
-                        </GameLabel>
                       </Typography>
+                      <GameLabel
+                        color={game?.id ? "success.main" : "error.main"}
+                      >
+                        {game?.id
+                          ? `${game?.name} (${game?.parcel})`
+                          : l("challenge_list.game_not_found")}
+                      </GameLabel>
                     </Box>
                     <Typography>
                       {l("challenge_list.description")}: {challenge.description}

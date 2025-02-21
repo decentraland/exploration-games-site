@@ -104,7 +104,7 @@ const ChallengeEditor = React.memo(
     )
 
     const hasNewChanges = useMemo(() => {
-      return Object.values(changedData).some((value) => value)
+      return Object.values(changedData).some(Boolean)
     }, [changedData])
 
     const onDataFieldChange = useCallback(
@@ -130,7 +130,7 @@ const ChallengeEditor = React.memo(
         <TextFieldStyled
           label={l("challenge_editor.field_mission")}
           value={`${missionData.missionName} - ${missionData.mission_id}`}
-          focused={changedData["mission_id"]}
+          focused={changedData.mission_id}
           onClick={() => setOpenMissions(true)}
         />
         <TextFieldStyled
@@ -138,14 +138,14 @@ const ChallengeEditor = React.memo(
           InputProps={{
             readOnly: true,
           }}
-          focused={changedData["game_id"]}
+          focused={changedData.game_id}
           value={`${missionData.gameName} - ${missionData.game_id}`}
           onClick={() => setOpenGames(true)}
         />
         <TextFieldStyled
           label={l("challenge_editor.field_description")}
           value={missionData.description}
-          focused={changedData["description"]}
+          focused={changedData.description}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -157,7 +157,7 @@ const ChallengeEditor = React.memo(
           label={l("challenge_editor.field_target_level")}
           type="number"
           value={missionData.target_level}
-          focused={changedData["target_level"]}
+          focused={changedData.target_level}
           onChange={(e) =>
             setMissionData((missionData) => ({
               ...missionData,
@@ -174,7 +174,7 @@ const ChallengeEditor = React.memo(
           error={!!jsonError}
           helperText={jsonError}
           onChange={onDataFieldChange}
-          focused={changedData["data"]}
+          focused={changedData.data}
         />
         <SaveButton disabled={!hasNewChanges} onClick={onSaveHandler} />
         <Dialog

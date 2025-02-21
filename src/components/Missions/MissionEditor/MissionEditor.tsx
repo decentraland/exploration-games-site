@@ -79,7 +79,7 @@ const MissionEditor = React.memo(
     }, [missionData, create, missionId, fetchMissionData, onUpdate])
 
     const hasNewChanges = useMemo(() => {
-      return Object.values(dataChanged).some((value) => value)
+      return Object.values(dataChanged).some(Boolean)
     }, [dataChanged])
 
     if (loadingMissionData) {
@@ -112,7 +112,7 @@ const MissionEditor = React.memo(
           <TextFieldStyled
             label={l("mission_editor.field_description")}
             value={missionData.mission.description}
-            focused={dataChanged["description"]}
+            focused={dataChanged.description}
             onChange={(e) =>
               setMissionData((data) => ({
                 ...data,
@@ -122,7 +122,7 @@ const MissionEditor = React.memo(
           />
           <TextFieldStyled
             label={l("mission_editor.field_campaignKey")}
-            focused={dataChanged["campaign_key"]}
+            focused={dataChanged.campaign_key}
             value={missionData.mission.campaign_key}
             onChange={(e) =>
               setMissionData((data) => ({

@@ -48,7 +48,7 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
   }, [create, gameData?.id, data.name, data.x, data.y, onUpdate])
 
   const hasNewChanges = useMemo(() => {
-    return Object.values(dataChanged).some((value) => value)
+    return Object.values(dataChanged).some(Boolean)
   }, [dataChanged])
 
   return (
@@ -61,13 +61,13 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
       <TextFieldStyled
         label={l("game_editor.name")}
         value={data.name}
-        focused={dataChanged["name"]}
+        focused={dataChanged.name}
         onChange={(e) => setData((data) => ({ ...data, name: e.target.value }))}
       />
       <TextFieldStyled
         label={l("game_editor.parcel_x")}
         type="number"
-        focused={dataChanged["x"]}
+        focused={dataChanged.x}
         value={data.x}
         onChange={(e) =>
           setData((data) => ({
@@ -81,7 +81,7 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
       <TextFieldStyled
         label={l("game_editor.parcel_y")}
         type="number"
-        focused={dataChanged["y"]}
+        focused={dataChanged.y}
         value={data.y}
         onChange={(e) =>
           setData((data) => ({
