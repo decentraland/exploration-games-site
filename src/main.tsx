@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-router-dom"
 import AuthProvider from "decentraland-gatsby/dist/context/Auth/AuthProvider"
+import IntlProvider from "decentraland-gatsby/dist/plugins/intl/IntlProvider"
 import * as ReactDOM from "react-dom/client"
 import {
   CssBaseline,
@@ -7,13 +8,16 @@ import {
   darkTheme,
 } from "decentraland-ui2"
 import { router } from "./components/Router/Router"
+import en from "./intl/en.json"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <CssVarsProvider theme={darkTheme}>
     <CssBaseline />
-    {/* @ts-expect-error AuthProvider type definition issue */}
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <IntlProvider locale="en" messages={en} defaultLocale="en">
+      {/* @ts-expect-error AuthProvider type definition issue */}
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </IntlProvider>
   </CssVarsProvider>
 )

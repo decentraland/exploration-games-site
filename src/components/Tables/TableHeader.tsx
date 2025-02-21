@@ -20,7 +20,7 @@ const TableHeader = <D extends object>(props: TableHeaderProps<D>) => {
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
-            key={headCell.id}
+            key={headCell.id.toString()}
             align={headCell.numeric ? "right" : "left"}
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
