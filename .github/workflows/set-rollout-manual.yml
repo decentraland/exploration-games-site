@@ -40,7 +40,7 @@ jobs:
           packageVersion: ${{ github.event.inputs.packageVersion }}
 
           # Rollout information
-          deploymentPath: "minigames"
+          deploymentPath: "exploration-games"
           deploymentEnvironment: ${{ github.event.inputs.deploymentEnvironment }}
           deploymentName: "_site"
           percentage: ${{ github.event.inputs.rolloutPercentage }}
