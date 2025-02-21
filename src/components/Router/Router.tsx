@@ -22,7 +22,7 @@ const router = createBrowserRouter(
   {
     // TODO: apply the final basename
     basename: /^decentraland.(zone|org|today)$/.test(window.location.host)
-      ? "/mini-game"
+      ? "/exploration-games"
       : "",
   }
 )

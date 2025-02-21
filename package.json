@@ -27,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/decentraland/exploration-games-site/issues"
   },
-  "homepage": "",
+  "homepage": "https://decentraland.org/exploration-games",
   "engines": {
     "node": "20.x",
     "npm": "8.x || 9.x || 10.x"
