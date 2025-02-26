@@ -37,6 +37,12 @@ const headerData: readonly HeadCell<MissionRequest>[] = [
     label: "ID",
   },
   {
+    id: "type",
+    numeric: false,
+    disablePadding: true,
+    label: "Type",
+  },
+  {
     id: "description",
     numeric: false,
     disablePadding: true,
@@ -209,6 +215,7 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
                   sx={{ cursor: "pointer" }}
                 >
                   <TableCell padding="none">{row.id}</TableCell>
+                  <TableCell padding="none">{row.type}</TableCell>
                   <TableCell padding="none">{row.description}</TableCell>
                   <TableCell padding="none">
                     <Address shorten value={row.campaign_key} />

@@ -24,6 +24,7 @@
   "mission_editor.field_campaignKey": "Campaign key",
   "mission_editor.field_description": "Description",
   "mission_editor.field_missionId": "Mission id",
+  "mission_editor.field_type": "Type",
   "mission_list.dialog_title": "Mission Info",
   "mission_list.mission": "mission",
   "mission_list.missions": "Missions",

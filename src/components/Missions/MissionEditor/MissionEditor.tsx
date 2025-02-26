@@ -16,6 +16,7 @@ const EMPTY_DATA: MissionData = {
     id: "",
     description: "",
     campaign_key: "",
+    type: "",
   },
   challenges: [],
   games: [],
@@ -67,6 +68,7 @@ const MissionEditor = React.memo(
       const body = {
         description: missionData.mission.description,
         campaign_key: missionData.mission.campaign_key,
+        type: missionData.mission.type,
       }
 
       if (create) {
@@ -128,6 +130,17 @@ const MissionEditor = React.memo(
               setMissionData((data) => ({
                 ...data,
                 mission: { ...data.mission, campaign_key: e.target.value },
+              }))
+            }
+          />
+          <TextFieldStyled
+            label={l("mission_editor.field_type")}
+            focused={dataChanged.type}
+            value={missionData.mission.type}
+            onChange={(e) =>
+              setMissionData((data) => ({
+                ...data,
+                mission: { ...data.mission, type: e.target.value },
               }))
             }
           />
