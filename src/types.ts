@@ -2,8 +2,13 @@ type MissionRequest = {
   id: string
   description: string
   campaign_key: string
-  type: string
+  type: MissionType
   // active: boolean
+}
+
+enum MissionType {
+  MINI_GAMES = "mini-games",
+  FASHION_WEEK = "fw-2025",
 }
 
 type MissionData = {
@@ -52,3 +57,5 @@ export type {
   MissionData,
   ChallengeResponse,
 }
+
+export { MissionType }
