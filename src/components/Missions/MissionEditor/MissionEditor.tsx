@@ -1,10 +1,19 @@
 import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
-import { Box, CircularProgress, Divider, Typography } from "decentraland-ui2"
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from "decentraland-ui2"
 import { MissionEditorProps } from "./MissionEditor.typed"
 import { missionApi } from "../../../api/missionApi"
-import { MissionData } from "../../../types"
+import { MissionData, MissionType } from "../../../types"
 import { compareDataChanged } from "../../../utils/compareDataChanged"
 import { ChallengeList } from "../../Challenge/ChallengeList/ChallengeList"
 import { SaveButton } from "../../SaveButton/SaveButton"
@@ -16,6 +25,7 @@ const EMPTY_DATA: MissionData = {
     id: "",
     description: "",
     campaign_key: "",
+    type: MissionType.MINI_GAMES,
   },
   challenges: [],
   games: [],
@@ -60,13 +70,19 @@ const MissionEditor = React.memo(
 
     const saveClickHandler = useCallback(async () => {
       if (
-        !(missionData.mission.description && missionData.mission.campaign_key)
-      )
+        !(
+          missionData.mission.description &&
+          missionData.mission.campaign_key &&
+          missionData.mission.type
+        )
+      ) {
         return
+      }
 
       const body = {
         description: missionData.mission.description,
         campaign_key: missionData.mission.campaign_key,
+        type: missionData.mission.type,
       }
 
       if (create) {
@@ -131,6 +147,35 @@ const MissionEditor = React.memo(
               }))
             }
           />
+          <FormControl
+            focused={dataChanged.type}
+            color={dataChanged.type ? "warning" : "success"}
+            variant="standard"
+          >
+            <InputLabel id="mission-type-label">
+              {l("mission_editor.field_type")}
+            </InputLabel>
+            <Select
+              labelId="mission-type-label"
+              label={l("mission_editor.field_type")}
+              value={missionData.mission.type}
+              onChange={(e) =>
+                setMissionData((data) => ({
+                  ...data,
+                  mission: {
+                    ...data.mission,
+                    type: e.target.value as MissionType,
+                  },
+                }))
+              }
+            >
+              {Object.values(MissionType).map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <SaveButton disabled={!hasNewChanges} onClick={saveClickHandler} />
         </Container>
         <Divider />

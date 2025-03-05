@@ -5,6 +5,7 @@ import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import {
   Address,
+  Alert,
   Box,
   CircularProgress,
   Dialog,
@@ -22,6 +23,7 @@ import { missionApi } from "../../../api/missionApi"
 import { locations } from "../../../modules/Locations"
 import { MissionRequest } from "../../../types"
 import { AddButton } from "../../AddButton/AddButton"
+import { ErrorScreen } from "../../ErrorScreen/ErrorScreen"
 import { SearchInput } from "../../SearchInput/SearchInput"
 import { HeadCell, TableOrder } from "../../Tables/Table.types"
 import { TableHeader } from "../../Tables/TableHeader"
@@ -35,6 +37,12 @@ const headerData: readonly HeadCell<MissionRequest>[] = [
     numeric: false,
     disablePadding: true,
     label: "ID",
+  },
+  {
+    id: "type",
+    numeric: false,
+    disablePadding: true,
+    label: "Type",
   },
   {
     id: "description",
@@ -81,7 +89,10 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
       const data = await missionApi.getAllMissions()
       setMissions(data)
     } catch (err) {
-      setError("Failed to fetch missions")
+      console.error(err)
+      setError(
+        `Failed to fetch missions. Check signer address and permissions.`
+      )
     } finally {
       setLoadingMissions(false)
     }
@@ -157,11 +168,19 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
   }
 
   if (error) {
-    return <div>{error}</div>
+    return (
+      <ErrorScreen>
+        <Alert severity="error">{error}</Alert>
+      </ErrorScreen>
+    )
   }
 
   if (missions.length === 0) {
-    return <div>No missions found</div>
+    return (
+      <ErrorScreen>
+        <Alert severity="info">{l("mission_list.no_missions")}</Alert>
+      </ErrorScreen>
+    )
   }
 
   return (
@@ -209,6 +228,7 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
                   sx={{ cursor: "pointer" }}
                 >
                   <TableCell padding="none">{row.id}</TableCell>
+                  <TableCell padding="none">{row.type}</TableCell>
                   <TableCell padding="none">{row.description}</TableCell>
                   <TableCell padding="none">
                     <Address shorten value={row.campaign_key} />

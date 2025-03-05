@@ -5,6 +5,7 @@ import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
 import { Edit } from "@mui/icons-material"
 import {
+  Alert,
   Box,
   CircularProgress,
   Dialog,
@@ -31,6 +32,7 @@ import { gameApi } from "../../../api/gameApi.ts"
 import { locations } from "../../../modules/Locations.ts"
 import { GameResponse } from "../../../types.ts"
 import { AddButton } from "../../AddButton/AddButton.tsx"
+import { ErrorScreen } from "../../ErrorScreen/ErrorScreen.tsx"
 import { SearchInput } from "../../SearchInput/SearchInput.tsx"
 import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
 import { TableHeader } from "../../Tables/TableHeader.tsx"
@@ -173,11 +175,19 @@ const GamesList = React.memo(({ onSelect }: GamesProps) => {
   }
 
   if (error) {
-    return <div>{error}</div>
+    return (
+      <ErrorScreen>
+        <Alert severity="error">{error}</Alert>
+      </ErrorScreen>
+    )
   }
 
   if (games.length === 0) {
-    return <div>No games found</div>
+    return (
+      <ErrorScreen>
+        <Alert severity="info">No games found</Alert>
+      </ErrorScreen>
+    )
   }
 
   return (

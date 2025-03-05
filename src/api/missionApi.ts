@@ -64,6 +64,7 @@ export const missionApi = {
           .json({
             description: mission.description,
             campaign_key: mission.campaign_key,
+            type: mission.type,
           })
       )
       return
