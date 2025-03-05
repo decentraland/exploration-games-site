@@ -36,8 +36,9 @@ const GameEditor = React.memo(({ gameData, onUpdate }: GameEditorProps) => {
   const l = useFormatMessage()
 
   const saveClickHandler = useCallback(async () => {
-    if (!(data.name && Number.isInteger(data.x) && Number.isInteger(data.y)))
+    if (!(data.name && Number.isInteger(data.x) && Number.isInteger(data.y))) {
       return
+    }
 
     if (create) {
       await gameApi.createGame(data)

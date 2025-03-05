@@ -75,8 +75,9 @@ const MissionEditor = React.memo(
           missionData.mission.campaign_key &&
           missionData.mission.type
         )
-      )
+      ) {
         return
+      }
 
       const body = {
         description: missionData.mission.description,
