@@ -18,13 +18,14 @@ import { compareDataChanged } from "../../../utils/compareDataChanged"
 import { ChallengeList } from "../../Challenge/ChallengeList/ChallengeList"
 import { SaveButton } from "../../SaveButton/SaveButton"
 import { TextFieldStyled } from "../../TextFieldStyled/TextFieldStyled"
-import { Container } from "./MissionEditor.styled"
+import { ColInputs, ColThumb, Columns, Container } from "./MissionEditor.styled"
 
 const EMPTY_DATA: MissionData = {
   mission: {
     id: "",
     description: "",
     campaign_key: "",
+    thumb_url: "",
     type: MissionType.MINI_GAMES,
   },
   challenges: [],
@@ -73,6 +74,7 @@ const MissionEditor = React.memo(
         !(
           missionData.mission.description &&
           missionData.mission.campaign_key &&
+          missionData.mission.thumb_url &&
           missionData.mission.type
         )
       ) {
@@ -82,6 +84,7 @@ const MissionEditor = React.memo(
       const body = {
         description: missionData.mission.description,
         campaign_key: missionData.mission.campaign_key,
+        thumb_url: missionData.mission.thumb_url,
         type: missionData.mission.type,
       }
 
@@ -125,57 +128,83 @@ const MissionEditor = React.memo(
               {l("mission_editor.field_missionId")}: {serverData?.mission.id}
             </Typography>
           )}
-          <TextFieldStyled
-            label={l("mission_editor.field_description")}
-            value={missionData.mission.description}
-            focused={dataChanged.description}
-            onChange={(e) =>
-              setMissionData((data) => ({
-                ...data,
-                mission: { ...data.mission, description: e.target.value },
-              }))
-            }
-          />
-          <TextFieldStyled
-            label={l("mission_editor.field_campaignKey")}
-            focused={dataChanged.campaign_key}
-            value={missionData.mission.campaign_key}
-            onChange={(e) =>
-              setMissionData((data) => ({
-                ...data,
-                mission: { ...data.mission, campaign_key: e.target.value },
-              }))
-            }
-          />
-          <FormControl
-            focused={dataChanged.type}
-            color={dataChanged.type ? "warning" : "success"}
-            variant="standard"
-          >
-            <InputLabel id="mission-type-label">
-              {l("mission_editor.field_type")}
-            </InputLabel>
-            <Select
-              labelId="mission-type-label"
-              label={l("mission_editor.field_type")}
-              value={missionData.mission.type}
-              onChange={(e) =>
-                setMissionData((data) => ({
-                  ...data,
-                  mission: {
-                    ...data.mission,
-                    type: e.target.value as MissionType,
-                  },
-                }))
-              }
-            >
-              {Object.values(MissionType).map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Columns>
+            <ColInputs>
+              <TextFieldStyled
+                label={l("mission_editor.field_description")}
+                value={missionData.mission.description}
+                focused={dataChanged.description}
+                onChange={(e) =>
+                  setMissionData((data) => ({
+                    ...data,
+                    mission: { ...data.mission, description: e.target.value },
+                  }))
+                }
+                margin="normal"
+              />
+              <TextFieldStyled
+                label={l("mission_editor.field_thumbUrl")}
+                focused={dataChanged.thumb_url}
+                value={missionData.mission.thumb_url}
+                onChange={(e) =>
+                  setMissionData((data) => ({
+                    ...data,
+                    mission: { ...data.mission, thumb_url: e.target.value },
+                  }))
+                }
+                margin="normal"
+              />
+              <TextFieldStyled
+                label={l("mission_editor.field_campaignKey")}
+                focused={dataChanged.campaign_key}
+                value={missionData.mission.campaign_key}
+                onChange={(e) =>
+                  setMissionData((data) => ({
+                    ...data,
+                    mission: { ...data.mission, campaign_key: e.target.value },
+                  }))
+                }
+                margin="normal"
+              />
+
+              <FormControl
+                focused={dataChanged.type}
+                color={dataChanged.type ? "warning" : "success"}
+                variant="standard"
+                margin="normal"
+              >
+                <InputLabel id="mission-type-label">
+                  {l("mission_editor.field_type")}
+                </InputLabel>
+                <Select
+                  labelId="mission-type-label"
+                  label={l("mission_editor.field_type")}
+                  value={missionData.mission.type}
+                  onChange={(e) =>
+                    setMissionData((data) => ({
+                      ...data,
+                      mission: {
+                        ...data.mission,
+                        type: e.target.value as MissionType,
+                      },
+                    }))
+                  }
+                >
+                  {Object.values(MissionType).map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </ColInputs>
+            <ColThumb
+              src={`${missionData.mission.thumb_url}`}
+              onError={(e) => {
+                e.currentTarget.src = "/invalid_url.png"
+              }}
+            />
+          </Columns>
           <SaveButton disabled={!hasNewChanges} onClick={saveClickHandler} />
         </Container>
         <Divider />
