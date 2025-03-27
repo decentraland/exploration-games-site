@@ -243,7 +243,7 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
                   <TableCell padding="none">{row.id}</TableCell>
                   <TableCell padding="none">{row.type}</TableCell>
                   <TableCell padding="none">{row.description}</TableCell>
-                  {onSelect ? null : (
+                  {!onSelect && (
                     <>
                       <TableCell padding="none">
                         <Address shorten value={row.campaign_key} />
