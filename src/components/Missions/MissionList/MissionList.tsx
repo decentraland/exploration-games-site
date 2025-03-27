@@ -144,7 +144,9 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
 
   const filteredMissions = useMemo(() => {
     return missions.filter((mission) =>
-      JSON.stringify(mission).toLowerCase().includes(search.toLowerCase())
+      JSON.stringify(Object.values(mission))
+        .toLowerCase()
+        .includes(search.toLowerCase())
     )
   }, [missions, search])
   // Avoid a layout jump when reaching the last page with empty rows.

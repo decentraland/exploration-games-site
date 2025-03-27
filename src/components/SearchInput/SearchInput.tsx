@@ -11,6 +11,8 @@ const SearchInput = React.memo(({ value, onChange }: SearchInputProps) => {
       size="small"
       value={value}
       onChange={onChange}
+      color={value ? "warning" : "secondary"}
+      focused={!!value}
     />
   )
 })
