@@ -140,7 +140,9 @@ const GamesList = React.memo(({ onSelect }: GamesProps) => {
 
   const filteredGames = useMemo(() => {
     return games.filter((game) =>
-      JSON.stringify(game).toLowerCase().includes(search.toLowerCase())
+      JSON.stringify(Object.values(game))
+        .toLowerCase()
+        .includes(search.toLowerCase())
     )
   }, [games, search])
 

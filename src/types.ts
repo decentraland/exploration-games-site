@@ -3,6 +3,7 @@ type MissionRequest = {
   description: string
   campaign_key: string
   type: MissionType
+  thumb_url: string
   // active: boolean
 }
 

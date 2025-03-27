@@ -1,4 +1,4 @@
-import { Box, Table, styled } from "decentraland-ui2"
+import { Box, Table, TableCell, styled } from "decentraland-ui2"
 
 const Container = styled(Box)({
   marginBottom: "20px",
@@ -12,4 +12,10 @@ const MissionsTable = styled(Table)({
   minWidth: "700px",
 })
 
-export { Container, TableContainer, MissionsTable }
+const ThumbCell = styled(TableCell)({
+  maxWidth: "100px",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+})
+
+export { Container, TableContainer, MissionsTable, ThumbCell }

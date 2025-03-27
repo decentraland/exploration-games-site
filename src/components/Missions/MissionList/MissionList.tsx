@@ -29,7 +29,12 @@ import { HeadCell, TableOrder } from "../../Tables/Table.types"
 import { TableHeader } from "../../Tables/TableHeader"
 import { getComparator, stableSort } from "../../Tables/utils"
 import { MissionEditor } from "../MissionEditor/MissionEditor"
-import { Container, MissionsTable, TableContainer } from "./MissionList.styled"
+import {
+  Container,
+  MissionsTable,
+  TableContainer,
+  ThumbCell,
+} from "./MissionList.styled"
 
 const headerData: readonly HeadCell<MissionRequest>[] = [
   {
@@ -55,6 +60,12 @@ const headerData: readonly HeadCell<MissionRequest>[] = [
     numeric: false,
     disablePadding: true,
     label: "Campaign Key",
+  },
+  {
+    id: "thumb_url",
+    numeric: false,
+    disablePadding: true,
+    label: "Thumbnail URL",
   },
 ]
 
@@ -133,7 +144,9 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
 
   const filteredMissions = useMemo(() => {
     return missions.filter((mission) =>
-      JSON.stringify(mission).toLowerCase().includes(search.toLowerCase())
+      JSON.stringify(Object.values(mission))
+        .toLowerCase()
+        .includes(search.toLowerCase())
     )
   }, [missions, search])
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -212,7 +225,7 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
           <TableHeader
             order={order}
             orderBy={orderBy}
-            headCells={headerData}
+            headCells={headerData.slice(0, onSelect ? 3 : 5)}
             onRequestSort={handleRequestSort}
           />
           <TableBody>
@@ -230,9 +243,14 @@ const MissionList = React.memo(({ onSelect }: MissionListProps) => {
                   <TableCell padding="none">{row.id}</TableCell>
                   <TableCell padding="none">{row.type}</TableCell>
                   <TableCell padding="none">{row.description}</TableCell>
-                  <TableCell padding="none">
-                    <Address shorten value={row.campaign_key} />
-                  </TableCell>
+                  {!onSelect && (
+                    <>
+                      <TableCell padding="none">
+                        <Address shorten value={row.campaign_key} />
+                      </TableCell>
+                      <ThumbCell padding="none">{row.thumb_url}</ThumbCell>
+                    </>
+                  )}
                 </TableRow>
               )
             })}
