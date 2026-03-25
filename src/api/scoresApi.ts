@@ -16,9 +16,29 @@ type GetAllProgressParams = {
 
 type GetLeaderboardParams = {
   limit?: number
-  sort?: Omit<ProgressSort, "level">
+  sort?: Exclude<ProgressSort, ProgressSort.LEVEL>
   direction?: "ASC" | "DESC"
   level?: number
+}
+
+type RawLeaderboardItem = Partial<{
+  user_name: string
+  name: string
+  user_address: string
+  score: number | string
+  time: number | string
+  moves: number | string
+  level: number | string
+  data: Record<string, unknown>
+}>
+
+const toNumber = (value: number | string | undefined): number => {
+  if (typeof value === "number") return value
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
 }
 
 export const scoresApi = {
@@ -30,7 +50,8 @@ export const scoresApi = {
       const queryParams = new URLSearchParams()
       if (params.limit !== undefined)
         queryParams.set("limit", String(params.limit))
-      if (params.page !== undefined) queryParams.set("page", String(params.page))
+      if (params.page !== undefined)
+        queryParams.set("page", String(params.page))
       if (params.sort) queryParams.set("sort", params.sort)
       if (params.direction) queryParams.set("direction", params.direction)
       if (params.level !== undefined)
@@ -57,10 +78,7 @@ export const scoresApi = {
     }
   },
 
-  async setProgressStatus(
-    ids: string[],
-    disabled: boolean
-  ): Promise<unknown> {
+  async setProgressStatus(ids: string[], disabled: boolean): Promise<unknown> {
     try {
       const response = await api.fetch(
         `/api/games/progress/status`,
@@ -93,15 +111,25 @@ export const scoresApi = {
       const qs = queryParams.toString()
       const url = `/api/games/${gameId}/leaderboard${qs ? `?${qs}` : ""}`
 
-      const response = (await api.fetch(
-        url,
-        new Options().method("GET")
-      )) as { data: Leaderboard[] }
+      const response = (await api.fetch(url, new Options().method("GET"))) as {
+        data?: RawLeaderboardItem[]
+      }
 
-      if (!response.data) {
+      if (!response.data || !Array.isArray(response.data)) {
         throw new Error("Fetching leaderboard: no data")
       }
-      return response
+
+      const normalizedData: Leaderboard[] = response.data.map((row) => ({
+        user_name: row.user_name ?? row.name ?? "",
+        user_address: row.user_address ?? "",
+        score: toNumber(row.score),
+        time: toNumber(row.time),
+        moves: toNumber(row.moves),
+        level: toNumber(row.level),
+        data: row.data ?? {},
+      }))
+
+      return { data: normalizedData }
     } catch (error) {
       console.error("Error fetching leaderboard:", error)
       throw error

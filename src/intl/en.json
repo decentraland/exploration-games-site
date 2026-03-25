@@ -39,8 +39,8 @@
   "scores_col_time": "Time",
   "scores_col_user_address": "Address",
   "scores_col_user_name": "User Name",
-  "scores_disable_selected": "Disable selected",
-  "scores_enable_selected": "Enable selected",
+  "scores_disable_selected": "Disable",
+  "scores_enable_selected": "Enable",
   "scores_error_fetch": "Failed to fetch scores",
   "scores_error_status": "Failed to update status",
   "scores_leaderboard_empty": "No leaderboard data",
@@ -49,9 +49,6 @@
   "scores_select_game": "Select a game",
   "scores_select_game_dialog_title": "Select Game",
   "scores_selected": "selected",
-  "scores_selected_game": "Game",
-  "scores_status_active": "Active",
-  "scores_status_disabled": "Disabled",
   "scores_title": "Scores",
   "search_input.search": "Search"
 }

@@ -9,7 +9,7 @@ import {
 import { TableHeaderProps, TableOrder } from "./Table.types"
 
 const TableHeader = <D extends object>(props: TableHeaderProps<D>) => {
-  const { order, orderBy, onRequestSort, headCells } = props
+  const { order, orderBy, onRequestSort, headCells, checkboxCell } = props
   const createSortHandler =
     (property: keyof D) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property)
@@ -18,6 +18,9 @@ const TableHeader = <D extends object>(props: TableHeaderProps<D>) => {
   return (
     <TableHead>
       <TableRow>
+        {checkboxCell !== undefined && (
+          <TableCell padding="checkbox">{checkboxCell}</TableCell>
+        )}
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id.toString()}

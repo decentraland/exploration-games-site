@@ -112,7 +112,7 @@ const GamesList = React.memo(({ onSelect }: GamesProps) => {
   const handleClick = useCallback(
     (game: GameResponse) => {
       if (onSelect) {
-        onSelect(game.id, game.name)
+        onSelect(game.id, game.name, game.parcel)
       } else {
         openEditorHandler(game)
       }

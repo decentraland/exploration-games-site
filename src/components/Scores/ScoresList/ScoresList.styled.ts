@@ -9,8 +9,8 @@ const ScoresListTableContainer = styled(TableContainer)({
 })
 
 const ScoresAddressTableCell = styled(TableCell)({
-  minWidth: "200px",
-  maxWidth: "200px",
+  minWidth: "140px",
+  maxWidth: "160px",
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -18,10 +18,21 @@ const ScoresAddressTableCell = styled(TableCell)({
 
 const ScoresUserNameTableCell = styled(TableCell)({
   minWidth: "120px",
+  maxWidth: "140px",
 })
 
 const ScoresMetricTableCell = styled(TableCell)({
-  minWidth: "80px",
+  minWidth: "90px",
+  maxWidth: "90px",
+  paddingLeft: "8px",
+  paddingRight: "8px",
+})
+
+const ScoresStatusTableCell = styled(TableCell)({
+  minWidth: "140px",
+  maxWidth: "140px",
+  paddingLeft: "8px",
+  paddingRight: "8px",
 })
 
 export {
@@ -30,4 +41,5 @@ export {
   ScoresAddressTableCell,
   ScoresUserNameTableCell,
   ScoresMetricTableCell,
+  ScoresStatusTableCell,
 }

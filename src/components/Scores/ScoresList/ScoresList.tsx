@@ -1,18 +1,20 @@
 import * as React from "react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Navigate } from "react-router-dom"
 import useAuthContext from "decentraland-gatsby/dist/context/Auth/useAuthContext"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
+import { List as ListIcon } from "@mui/icons-material"
 import {
+  Address,
   Alert,
   Box,
   Button,
   Checkbox,
-  Chip,
   CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
+  Divider,
   Table,
   TableBody,
   TableCell,
@@ -27,35 +29,21 @@ import {
   ScoresListContainer,
   ScoresListTableContainer,
   ScoresMetricTableCell,
+  ScoresStatusTableCell,
   ScoresUserNameTableCell,
-} from "./ScoresList.styled"
-import { scoresApi } from "../../../api/scoresApi"
-import { locations } from "../../../modules/Locations"
-import { ProgressSort, UserProgress } from "../../../types"
-import { ErrorScreen } from "../../ErrorScreen/ErrorScreen"
-import { GamesList } from "../../Games/GamesList/GamesList"
-import { HeadCell, TableOrder } from "../../Tables/Table.types"
-import { TableHeader } from "../../Tables/TableHeader"
-import { LeaderboardPreview } from "../LeaderboardPreview/LeaderboardPreview"
+} from "./ScoresList.styled.ts"
+import { scoresApi } from "../../../api/scoresApi.ts"
+import { leaderboardConfig } from "../../../config/leaderboard.ts"
+import { locations } from "../../../modules/Locations.ts"
+import { ProgressSort, UserProgress } from "../../../types.ts"
+import { ErrorScreen } from "../../ErrorScreen/ErrorScreen.tsx"
+import { GamesList } from "../../Games/GamesList/GamesList.tsx"
+import { SearchInput } from "../../SearchInput/SearchInput.tsx"
+import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
+import { TableHeader } from "../../Tables/TableHeader.tsx"
+import { LeaderboardPreview } from "../LeaderboardPreview/LeaderboardPreview.tsx"
 
 type UserProgressRow = UserProgress & { __rowKey: string }
-
-const headerRow: readonly HeadCell<UserProgressRow>[] = [
-  { id: "user_name", numeric: false, disablePadding: true, label: "User Name" },
-  {
-    id: "user_address",
-    numeric: false,
-    disablePadding: true,
-    label: "Address",
-  },
-  { id: "score", numeric: true, disablePadding: true, label: "Score" },
-  { id: "time", numeric: true, disablePadding: true, label: "Time" },
-  { id: "moves", numeric: true, disablePadding: true, label: "Moves" },
-  { id: "level", numeric: true, disablePadding: true, label: "Level" },
-  { id: "disabled", numeric: false, disablePadding: true, label: "Status" },
-]
-
-const ROWS_PER_PAGE = 25
 
 const sortToProgressSort: Partial<Record<keyof UserProgressRow, ProgressSort>> =
   {
@@ -66,13 +54,20 @@ const sortToProgressSort: Partial<Record<keyof UserProgressRow, ProgressSort>> =
     user_name: ProgressSort.LATEST,
   }
 
+// Module-level state persists across route navigation (component unmount/remount)
+let _gameId: string | null = null
+let _gameName = ""
+let _gameParcel = ""
+
 const ScoresList = React.memo(() => {
   const [account, accountState] = useAuthContext()
   const loading = accountState.loading
   const l = useFormatMessage()
 
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
-  const [selectedGameName, setSelectedGameName] = useState<string>("")
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(_gameId)
+  const [selectedGameName, setSelectedGameName] = useState<string>(_gameName)
+  const [selectedGameParcel, setSelectedGameParcel] =
+    useState<string>(_gameParcel)
   const [openGameSelector, setOpenGameSelector] = useState(false)
 
   const [scores, setScores] = useState<UserProgress[]>([])
@@ -83,14 +78,65 @@ const ScoresList = React.memo(() => {
   const [order, setOrder] = useState<TableOrder>(TableOrder.DESC)
   const [orderBy, setOrderBy] = useState<keyof UserProgressRow>("score")
   const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(25)
+  const [search, setSearch] = useState("")
 
   const [selected, setSelected] = useState<string[]>([])
   const [actionLoading, setActionLoading] = useState(false)
   const [leaderboardKey, setLeaderboardKey] = useState(0)
+  const [showLeaderboard, setShowLeaderboard] = useState(true)
 
   if (!account && !loading) {
     return <Navigate to={locations.signIn()} />
   }
+
+  const headerRow = useMemo<readonly HeadCell<UserProgressRow>[]>(
+    () => [
+      {
+        id: "user_name",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_user_name"),
+      },
+      {
+        id: "user_address",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_user_address"),
+      },
+      {
+        id: "score",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_score"),
+      },
+      {
+        id: "time",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_time"),
+      },
+      {
+        id: "moves",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_moves"),
+      },
+      {
+        id: "level",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_level"),
+      },
+      {
+        id: "disabled",
+        numeric: false,
+        disablePadding: true,
+        label: l("scores_col_status"),
+      },
+    ],
+    [l]
+  )
 
   const fetchScores = useCallback(async () => {
     if (!selectedGameId) return
@@ -100,24 +146,37 @@ const ScoresList = React.memo(() => {
       const sortKey = sortToProgressSort[orderBy] ?? ProgressSort.SCORE
       const direction = order === TableOrder.ASC ? "ASC" : "DESC"
       const response = await scoresApi.getAllProgressInGame(selectedGameId, {
-        limit: ROWS_PER_PAGE,
+        limit: rowsPerPage,
         page: page + 1,
         sort: sortKey,
         direction,
       })
       setScores(response.data)
-      setTotalCount(response.data.length === ROWS_PER_PAGE ? (page + 2) * ROWS_PER_PAGE : (page) * ROWS_PER_PAGE + response.data.length)
+      setTotalCount(
+        response.data.length === rowsPerPage
+          ? (page + 2) * rowsPerPage
+          : page * rowsPerPage + response.data.length
+      )
     } catch {
       setError(l("scores_error_fetch"))
     } finally {
       setLoadingScores(false)
     }
-  }, [selectedGameId, order, orderBy, page, l])
+  }, [selectedGameId, order, orderBy, page, rowsPerPage, l])
 
   useEffect(() => {
     setSelected([])
     fetchScores()
   }, [fetchScores])
+
+  const filteredScores = useMemo(() => {
+    if (!search) return scores
+    return scores.filter((row) =>
+      JSON.stringify(Object.values(row))
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    )
+  }, [scores, search])
 
   const handleRequestSort = useCallback(
     (_: React.MouseEvent<unknown>, property: keyof UserProgressRow) => {
@@ -132,12 +191,12 @@ const ScoresList = React.memo(() => {
   const handleSelectAll = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.checked) {
-        setSelected(scores.map((s) => s.id))
+        setSelected(filteredScores.map((s) => s.id))
       } else {
         setSelected([])
       }
     },
-    [scores]
+    [filteredScores]
   )
 
   const handleSelectOne = useCallback((id: string) => {
@@ -164,19 +223,28 @@ const ScoresList = React.memo(() => {
     [selected, fetchScores, l]
   )
 
-  const handleGameSelect = useCallback((gameId: string, gameName: string) => {
-    setSelectedGameId(gameId)
-    setSelectedGameName(gameName)
-    setOpenGameSelector(false)
-    setPage(0)
-    setSelected([])
-  }, [])
+  const handleGameSelect = useCallback(
+    (gameId: string, gameName: string, gameParcel: string) => {
+      _gameId = gameId
+      _gameName = gameName
+      _gameParcel = gameParcel
+      setSelectedGameId(gameId)
+      setSelectedGameName(gameName)
+      setSelectedGameParcel(gameParcel)
+      setOpenGameSelector(false)
+      setPage(0)
+      setSelected([])
+      if (gameId in leaderboardConfig) setShowLeaderboard(true)
+    },
+    []
+  )
 
   const isSelected = (id: string) => selected.includes(id)
+  const hasLeaderboard = !!selectedGameId && selectedGameId in leaderboardConfig
 
   return (
     <Box>
-      <Toolbar>
+      <Toolbar sx={{ gap: 1 }}>
         <Typography
           sx={{ flex: "1 1 100%" }}
           variant="h6"
@@ -185,167 +253,231 @@ const ScoresList = React.memo(() => {
         >
           {l("scores_title")}
         </Typography>
+
+        {selected.length > 0 && (
+          <>
+            <Typography variant="subtitle2" sx={{ whiteSpace: "nowrap" }}>
+              {selected.length} {l("scores_selected")}
+            </Typography>
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              disabled={actionLoading}
+              onClick={() => handleSetStatus(true)}
+              sx={{ whiteSpace: "nowrap", fontSize: "0.7rem" }}
+            >
+              {l("scores_disable_selected")}
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              disabled={actionLoading}
+              onClick={() => handleSetStatus(false)}
+              sx={{ whiteSpace: "nowrap", fontSize: "0.7rem" }}
+            >
+              {l("scores_enable_selected")}
+            </Button>
+          </>
+        )}
+
+        {selectedGameId && (
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        )}
+
+        {hasLeaderboard && (
+          <Tooltip title="Show Leaderboard">
+            <Button
+              // size="small"
+              variant={!showLeaderboard ? "outlined" : "contained"}
+              onClick={() => setShowLeaderboard((v) => !v)}
+            >
+              <ListIcon fontSize="small" />
+            </Button>
+          </Tooltip>
+        )}
+        <Divider orientation="vertical" />
         <Button
-          variant="outlined"
+          variant="contained"
+          size="small"
           onClick={() => setOpenGameSelector(true)}
-          sx={{ whiteSpace: "nowrap" }}
+          sx={
+            selectedGameName
+              ? {
+                  // Prevent the button from being squeezed by the toolbar,
+                  // which would force the game name/id to wrap.
+                  whiteSpace: "nowrap",
+                  textAlign: "left",
+                  lineHeight: 1.3,
+                  minWidth: "max-content",
+                  flexShrink: 0,
+                }
+              : { whiteSpace: "nowrap" }
+          }
         >
-          {selectedGameName
-            ? `${l("scores_selected_game")}: ${selectedGameName}`
-            : l("scores_select_game")}
+          {selectedGameName ? (
+            <Box
+              component="span"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <span style={{ whiteSpace: "nowrap" }}>
+                {selectedGameName} ({selectedGameParcel})
+              </span>
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  opacity: 0.8,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {selectedGameId}
+              </span>
+            </Box>
+          ) : (
+            l("scores_select_game")
+          )}
         </Button>
+
+        {/* {hasLeaderboard && (
+          <Tooltip title="Show Leaderboard">
+            <Button
+              // size="small"
+              variant={!showLeaderboard ? "outlined" : "contained"}
+              onClick={() => setShowLeaderboard((v) => !v)}
+            >
+              <ListIcon fontSize="small" />
+            </Button>
+          </Tooltip>
+        )} */}
       </Toolbar>
 
       {selectedGameId && (
-        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            {selected.length > 0 && (
-              <Toolbar sx={{ gap: 1 }}>
-                <Typography variant="subtitle1" sx={{ flex: "1 1 100%" }}>
-                  {selected.length} {l("scores_selected")}
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="error"
+        <>
+          {loadingScores ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "40vh",
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <ErrorScreen>
+              <Alert severity="error">{error}</Alert>
+            </ErrorScreen>
+          ) : (
+            <ScoresListContainer>
+              <ScoresListTableContainer>
+                <Table
+                  aria-labelledby="scoresTitle"
                   size="small"
-                  disabled={actionLoading}
-                  onClick={() => handleSetStatus(true)}
+                  sx={{ minWidth: "700px" }}
                 >
-                  {l("scores_disable_selected")}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="success"
-                  size="small"
-                  disabled={actionLoading}
-                  onClick={() => handleSetStatus(false)}
-                >
-                  {l("scores_enable_selected")}
-                </Button>
-              </Toolbar>
-            )}
-
-            {loadingScores ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "40vh",
+                  <TableHeader
+                    order={order}
+                    orderBy={orderBy as string}
+                    headCells={headerRow}
+                    onRequestSort={handleRequestSort}
+                    checkboxCell={
+                      <Checkbox
+                        indeterminate={
+                          selected.length > 0 &&
+                          selected.length < filteredScores.length
+                        }
+                        checked={
+                          filteredScores.length > 0 &&
+                          selected.length === filteredScores.length
+                        }
+                        onChange={handleSelectAll}
+                      />
+                    }
+                  />
+                  <TableBody>
+                    {filteredScores.map((row) => {
+                      const isRowSelected = isSelected(row.id)
+                      return (
+                        <TableRow
+                          hover
+                          key={row.id}
+                          selected={isRowSelected}
+                          sx={{ cursor: "pointer" }}
+                          onClick={() => handleSelectOne(row.id)}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox checked={isRowSelected} />
+                          </TableCell>
+                          <ScoresUserNameTableCell padding="none">
+                            {row.user_name}
+                          </ScoresUserNameTableCell>
+                          <ScoresAddressTableCell padding="none">
+                            <Address tooltip value={row.user_address} />
+                          </ScoresAddressTableCell>
+                          <ScoresMetricTableCell padding="none">
+                            {row.score}
+                          </ScoresMetricTableCell>
+                          <ScoresMetricTableCell padding="none">
+                            {row.time}
+                          </ScoresMetricTableCell>
+                          <ScoresMetricTableCell padding="none">
+                            {row.moves}
+                          </ScoresMetricTableCell>
+                          <ScoresMetricTableCell padding="none">
+                            {row.level}
+                          </ScoresMetricTableCell>
+                          <ScoresStatusTableCell padding="none">
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-block",
+                                width: 10,
+                                height: 10,
+                                borderRadius: "50%",
+                                bgcolor: row.disabled
+                                  ? "error.main"
+                                  : "success.main",
+                              }}
+                            />
+                          </ScoresStatusTableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </ScoresListTableContainer>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, 50, 100]}
+                component="div"
+                count={totalCount}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={(_, newPage) => setPage(newPage)}
+                onRowsPerPageChange={(e) => {
+                  setRowsPerPage(parseInt(e.target.value, 10))
+                  setPage(0)
                 }}
-              >
-                <CircularProgress />
-              </Box>
-            ) : error ? (
-              <ErrorScreen>
-                <Alert severity="error">{error}</Alert>
-              </ErrorScreen>
-            ) : (
-              <ScoresListContainer>
-                <ScoresListTableContainer>
-                  <Table aria-labelledby="scoresTitle" size="small">
-                    <TableHeader
-                      order={order}
-                      orderBy={orderBy as string}
-                      headCells={[
-                        {
-                          id: "__rowKey" as keyof UserProgressRow,
-                          numeric: false,
-                          disablePadding: true,
-                          label: "",
-                        },
-                        ...headerRow,
-                      ]}
-                      onRequestSort={handleRequestSort}
-                    />
-                    <TableBody>
-                      <TableRow>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            indeterminate={
-                              selected.length > 0 &&
-                              selected.length < scores.length
-                            }
-                            checked={
-                              scores.length > 0 &&
-                              selected.length === scores.length
-                            }
-                            onChange={handleSelectAll}
-                          />
-                        </TableCell>
-                        <TableCell colSpan={7} />
-                      </TableRow>
-                      {scores.map((row) => {
-                        const isRowSelected = isSelected(row.id)
-                        return (
-                          <TableRow
-                            hover
-                            key={row.id}
-                            selected={isRowSelected}
-                            sx={{ cursor: "pointer" }}
-                            onClick={() => handleSelectOne(row.id)}
-                          >
-                            <TableCell padding="checkbox">
-                              <Checkbox checked={isRowSelected} />
-                            </TableCell>
-                            <ScoresUserNameTableCell padding="none">
-                              {row.user_name}
-                            </ScoresUserNameTableCell>
-                            <Tooltip title={row.user_address}>
-                              <ScoresAddressTableCell padding="none">
-                                {row.user_address}
-                              </ScoresAddressTableCell>
-                            </Tooltip>
-                            <ScoresMetricTableCell padding="none" align="right">
-                              {row.score}
-                            </ScoresMetricTableCell>
-                            <ScoresMetricTableCell padding="none" align="right">
-                              {row.time}
-                            </ScoresMetricTableCell>
-                            <ScoresMetricTableCell padding="none" align="right">
-                              {row.moves}
-                            </ScoresMetricTableCell>
-                            <ScoresMetricTableCell padding="none" align="right">
-                              {row.level}
-                            </ScoresMetricTableCell>
-                            <TableCell padding="none">
-                              {row.disabled ? (
-                                <Chip
-                                  label={l("scores_status_disabled")}
-                                  color="error"
-                                  size="small"
-                                />
-                              ) : (
-                                <Chip
-                                  label={l("scores_status_active")}
-                                  color="success"
-                                  size="small"
-                                />
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
-                </ScoresListTableContainer>
-                <TablePagination
-                  rowsPerPageOptions={[ROWS_PER_PAGE]}
-                  component="div"
-                  count={totalCount}
-                  rowsPerPage={ROWS_PER_PAGE}
-                  page={page}
-                  onPageChange={(_, newPage) => setPage(newPage)}
-                />
-              </ScoresListContainer>
-            )}
-          </Box>
+              />
+            </ScoresListContainer>
+          )}
 
-          <LeaderboardPreview
-            gameId={selectedGameId}
-            refreshKey={leaderboardKey}
-          />
-        </Box>
+          {hasLeaderboard && showLeaderboard && (
+            <LeaderboardPreview
+              gameId={selectedGameId}
+              refreshKey={leaderboardKey}
+              onClose={() => setShowLeaderboard(false)}
+            />
+          )}
+        </>
       )}
 
       <Dialog

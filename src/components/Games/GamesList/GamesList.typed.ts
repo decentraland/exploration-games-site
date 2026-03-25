@@ -1,3 +1,3 @@
 export type GamesProps = {
-  onSelect?: (gameId: string, gameName: string) => void
+  onSelect?: (gameId: string, gameName: string, gameParcel: string) => void
 }

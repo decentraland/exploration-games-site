@@ -1,14 +1,14 @@
 import * as React from "react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import useFormatMessage from "decentraland-gatsby/dist/hooks/useFormatMessage"
+import { Close as CloseIcon } from "@mui/icons-material"
 import {
   Alert,
   Box,
   CircularProgress,
+  IconButton,
   Table,
   TableBody,
-  TableCell,
-  TableHead,
   TableRow,
   Typography,
 } from "decentraland-ui2"
@@ -18,13 +18,29 @@ import {
   LeaderboardNameCell,
   LeaderboardRankCell,
   LeaderboardTableContainer,
-} from "./LeaderboardPreview.styled"
-import { LeaderboardPreviewProps } from "./LeaderboardPreview.typed"
-import { scoresApi } from "../../../api/scoresApi"
-import { Leaderboard } from "../../../types"
+} from "./LeaderboardPreview.styled.ts"
+import { LeaderboardPreviewProps } from "./LeaderboardPreview.typed.ts"
+import { scoresApi } from "../../../api/scoresApi.ts"
+import { leaderboardConfig } from "../../../config/leaderboard.ts"
+import { Leaderboard } from "../../../types.ts"
+import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
+import { TableHeader } from "../../Tables/TableHeader.tsx"
+
+type LeaderboardRow = Leaderboard & { rank: number }
+
+const formatMsToHms = (value: number) => {
+  if (!Number.isFinite(value) || value < 0) return "00:00:00"
+
+  const totalSeconds = Math.floor(value / 1000)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const centiseconds = Math.floor((value % 1000) / 10)
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(centiseconds).padStart(2, "0")}`
+}
 
 const LeaderboardPreview = React.memo(
-  ({ gameId, refreshKey }: LeaderboardPreviewProps) => {
+  ({ gameId, refreshKey, onClose }: LeaderboardPreviewProps) => {
     const l = useFormatMessage()
     const [leaderboard, setLeaderboard] = useState<Leaderboard[]>([])
     const [loading, setLoading] = useState(false)
@@ -32,11 +48,16 @@ const LeaderboardPreview = React.memo(
 
     const fetchLeaderboard = useCallback(async () => {
       if (!gameId) return
+      const config = leaderboardConfig[gameId]
+      if (!config) return
       setLoading(true)
       setError(null)
+
       try {
         const response = await scoresApi.getLeaderboard(gameId, {
           limit: 10,
+          sort: config.sortField,
+          direction: config.sortDirection,
         })
         setLeaderboard(response.data)
       } catch {
@@ -50,11 +71,72 @@ const LeaderboardPreview = React.memo(
       fetchLeaderboard()
     }, [fetchLeaderboard, refreshKey])
 
+    const config = useMemo(() => leaderboardConfig[gameId] ?? null, [gameId])
+
+    const headerRow: readonly HeadCell<LeaderboardRow>[] = useMemo(() => {
+      if (!config) return []
+      const cells: HeadCell<LeaderboardRow>[] = [
+        {
+          id: "rank",
+          numeric: false,
+          disablePadding: true,
+          label: "#",
+        },
+        {
+          id: "user_name",
+          numeric: false,
+          disablePadding: true,
+          label: l("scores_col_user_name"),
+        },
+      ]
+      if (config.showScore)
+        cells.push({
+          id: "score",
+          numeric: false,
+          disablePadding: true,
+          label: l("scores_col_score"),
+        })
+      if (config.showTime)
+        cells.push({
+          id: "time",
+          numeric: false,
+          disablePadding: true,
+          label: l("scores_col_time"),
+        })
+      if (config.showMoves)
+        cells.push({
+          id: "moves",
+          numeric: false,
+          disablePadding: true,
+          label: l("scores_col_moves"),
+        })
+      if (config.showLevel)
+        cells.push({
+          id: "level",
+          numeric: false,
+          disablePadding: true,
+          label: l("scores_col_level"),
+        })
+      return cells
+    }, [config, l])
+
     return (
       <LeaderboardContainer>
-        <Typography variant="h6" gutterBottom>
-          {l("scores_leaderboard_title")}
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1,
+          }}
+        >
+          <Typography variant="h6">{l("scores_leaderboard_title")}</Typography>
+          {onClose && (
+            <IconButton size="small" onClick={onClose}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
         {loading ? (
           <Box
             sx={{
@@ -73,21 +155,15 @@ const LeaderboardPreview = React.memo(
         ) : (
           <LeaderboardTableContainer>
             <Table size="small" aria-label="leaderboard">
-              <TableHead>
-                <TableRow>
-                  <LeaderboardRankCell padding="none">#</LeaderboardRankCell>
-                  <TableCell padding="none">{l("scores_col_user_name")}</TableCell>
-                  <TableCell padding="none" align="right">
-                    {l("scores_col_score")}
-                  </TableCell>
-                  <TableCell padding="none" align="right">
-                    {l("scores_col_time")}
-                  </TableCell>
-                  <TableCell padding="none" align="right">
-                    {l("scores_col_moves")}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
+              <TableHeader
+                order={TableOrder.DESC}
+                orderBy="score"
+                headCells={headerRow}
+                onRequestSort={() => {}}
+                // checkboxCell={
+                //   <LeaderboardRankCell padding="none">#</LeaderboardRankCell>
+                // }
+              />
               <TableBody>
                 {leaderboard.map((row, index) => (
                   <TableRow key={index}>
@@ -95,17 +171,28 @@ const LeaderboardPreview = React.memo(
                       {index + 1}
                     </LeaderboardRankCell>
                     <LeaderboardNameCell padding="none">
-                      {row.name}
+                      {row.user_name || row.user_address}
                     </LeaderboardNameCell>
-                    <LeaderboardMetricCell padding="none" align="right">
-                      {row.score}
-                    </LeaderboardMetricCell>
-                    <LeaderboardMetricCell padding="none" align="right">
-                      {row.time}
-                    </LeaderboardMetricCell>
-                    <LeaderboardMetricCell padding="none" align="right">
-                      {row.moves}
-                    </LeaderboardMetricCell>
+                    {config?.showScore && (
+                      <LeaderboardMetricCell padding="none">
+                        {row.score}
+                      </LeaderboardMetricCell>
+                    )}
+                    {config?.showTime && (
+                      <LeaderboardMetricCell padding="none">
+                        {formatMsToHms(row.time)}
+                      </LeaderboardMetricCell>
+                    )}
+                    {config?.showMoves && (
+                      <LeaderboardMetricCell padding="none">
+                        {row.moves}
+                      </LeaderboardMetricCell>
+                    )}
+                    {config?.showLevel && (
+                      <LeaderboardMetricCell padding="none">
+                        {row.level}
+                      </LeaderboardMetricCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

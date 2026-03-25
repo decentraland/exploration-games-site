@@ -67,8 +67,7 @@ type UserProgress = GameMetrics & {
 }
 
 type Leaderboard = GameMetrics & {
-  name: string
-  parcel: string
+  user_name: string
   user_address: string
   data: Record<string, unknown>
 }
