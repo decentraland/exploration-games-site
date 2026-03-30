@@ -36,6 +36,7 @@ import { scoresApi } from "../../../api/scoresApi.ts"
 import { leaderboardConfig } from "../../../config/leaderboard.ts"
 import { locations } from "../../../modules/Locations.ts"
 import { ProgressSort, UserProgress } from "../../../types.ts"
+import { formatMsToMinutes } from "../../../utils/formatTime.ts"
 import { ErrorScreen } from "../../ErrorScreen/ErrorScreen.tsx"
 import { GamesList } from "../../Games/GamesList/GamesList.tsx"
 import { SearchInput } from "../../SearchInput/SearchInput.tsx"
@@ -59,6 +60,8 @@ let _gameId: string | null = null
 let _gameName = ""
 let _gameParcel = ""
 
+const FETCH_LIMIT = 1000
+
 const ScoresList = React.memo(() => {
   const [account, accountState] = useAuthContext()
   const loading = accountState.loading
@@ -70,9 +73,11 @@ const ScoresList = React.memo(() => {
     useState<string>(_gameParcel)
   const [openGameSelector, setOpenGameSelector] = useState(false)
 
-  const [scores, setScores] = useState<UserProgress[]>([])
-  const [totalCount, setTotalCount] = useState(0)
+  const [allScores, setAllScores] = useState<UserProgress[]>([])
+  const [hasMore, setHasMore] = useState(false)
+  const [nextApiBatchPage, setNextApiBatchPage] = useState(2)
   const [loadingScores, setLoadingScores] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [order, setOrder] = useState<TableOrder>(TableOrder.DESC)
@@ -85,10 +90,6 @@ const ScoresList = React.memo(() => {
   const [actionLoading, setActionLoading] = useState(false)
   const [leaderboardKey, setLeaderboardKey] = useState(0)
   const [showLeaderboard, setShowLeaderboard] = useState(true)
-
-  if (!account && !loading) {
-    return <Navigate to={locations.signIn()} />
-  }
 
   const headerRow = useMemo<readonly HeadCell<UserProgressRow>[]>(
     () => [
@@ -146,37 +147,85 @@ const ScoresList = React.memo(() => {
       const sortKey = sortToProgressSort[orderBy] ?? ProgressSort.SCORE
       const direction = order === TableOrder.ASC ? "ASC" : "DESC"
       const response = await scoresApi.getAllProgressInGame(selectedGameId, {
-        limit: rowsPerPage,
-        page: page + 1,
+        limit: FETCH_LIMIT,
+        page: 1,
         sort: sortKey,
         direction,
       })
-      setScores(response.data)
-      setTotalCount(
-        response.data.length === rowsPerPage
-          ? (page + 2) * rowsPerPage
-          : page * rowsPerPage + response.data.length
-      )
+      setAllScores(response.data)
+      setHasMore(response.data.length === FETCH_LIMIT)
+      setNextApiBatchPage(2)
     } catch {
       setError(l("scores_error_fetch"))
     } finally {
       setLoadingScores(false)
     }
-  }, [selectedGameId, order, orderBy, page, rowsPerPage, l])
+  }, [selectedGameId, order, orderBy, l])
+
+  const fetchMoreScores = useCallback(async () => {
+    if (!selectedGameId) return
+    setLoadingMore(true)
+    try {
+      const sortKey = sortToProgressSort[orderBy] ?? ProgressSort.SCORE
+      const direction = order === TableOrder.ASC ? "ASC" : "DESC"
+      const response = await scoresApi.getAllProgressInGame(selectedGameId, {
+        limit: FETCH_LIMIT,
+        page: nextApiBatchPage,
+        sort: sortKey,
+        direction,
+      })
+      setAllScores((prev) => [...prev, ...response.data])
+      setHasMore(response.data.length === FETCH_LIMIT)
+      setNextApiBatchPage((prev) => prev + 1)
+    } catch {
+      setError(l("scores_error_fetch"))
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [selectedGameId, nextApiBatchPage, order, orderBy, l])
 
   useEffect(() => {
     setSelected([])
     fetchScores()
   }, [fetchScores])
 
+  // Fetch more when user reaches the last available display page
+  useEffect(() => {
+    if (!hasMore || search || loadingMore || loadingScores) return
+    const lastDisplayedIndex = (page + 1) * rowsPerPage
+    if (lastDisplayedIndex >= allScores.length) {
+      fetchMoreScores()
+    }
+  }, [
+    page,
+    rowsPerPage,
+    hasMore,
+    allScores.length,
+    search,
+    loadingMore,
+    loadingScores,
+    fetchMoreScores,
+  ])
+
   const filteredScores = useMemo(() => {
-    if (!search) return scores
-    return scores.filter((row) =>
+    if (!search) return allScores
+    return allScores.filter((row) =>
       JSON.stringify(Object.values(row))
         .toLowerCase()
         .includes(search.toLowerCase())
     )
-  }, [scores, search])
+  }, [allScores, search])
+
+  const pagedScores = useMemo(
+    () => filteredScores.slice(page * rowsPerPage, (page + 1) * rowsPerPage),
+    [filteredScores, page, rowsPerPage]
+  )
+
+  const paginationCount = useMemo(() => {
+    if (hasMore) return -1
+    if (search) return filteredScores.length
+    return allScores.length
+  }, [hasMore, search, filteredScores.length, allScores.length])
 
   const handleRequestSort = useCallback(
     (_: React.MouseEvent<unknown>, property: keyof UserProgressRow) => {
@@ -238,6 +287,10 @@ const ScoresList = React.memo(() => {
     },
     []
   )
+
+  if (!account && !loading) {
+    return <Navigate to={locations.signIn()} />
+  }
 
   const isSelected = (id: string) => selected.includes(id)
   const hasLeaderboard = !!selectedGameId && selectedGameId in leaderboardConfig
@@ -342,21 +395,11 @@ const ScoresList = React.memo(() => {
               </span>
             </Box>
           ) : (
-            l("scores_select_game")
+            <Box component="span" padding={0.5}>
+              {l("scores_select_game")}
+            </Box>
           )}
         </Button>
-
-        {/* {hasLeaderboard && (
-          <Tooltip title="Show Leaderboard">
-            <Button
-              // size="small"
-              variant={!showLeaderboard ? "outlined" : "contained"}
-              onClick={() => setShowLeaderboard((v) => !v)}
-            >
-              <ListIcon fontSize="small" />
-            </Button>
-          </Tooltip>
-        )} */}
       </Toolbar>
 
       {selectedGameId && (
@@ -404,7 +447,7 @@ const ScoresList = React.memo(() => {
                     }
                   />
                   <TableBody>
-                    {filteredScores.map((row) => {
+                    {pagedScores.map((row) => {
                       const isRowSelected = isSelected(row.id)
                       return (
                         <TableRow
@@ -427,7 +470,7 @@ const ScoresList = React.memo(() => {
                             {row.score}
                           </ScoresMetricTableCell>
                           <ScoresMetricTableCell padding="none">
-                            {row.time}
+                            {formatMsToMinutes(row.time)}
                           </ScoresMetricTableCell>
                           <ScoresMetricTableCell padding="none">
                             {row.moves}
@@ -458,7 +501,7 @@ const ScoresList = React.memo(() => {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, 50, 100]}
                 component="div"
-                count={totalCount}
+                count={paginationCount}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={(_, newPage) => setPage(newPage)}
@@ -467,6 +510,11 @@ const ScoresList = React.memo(() => {
                   setPage(0)
                 }}
               />
+              {loadingMore && (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
+                  <CircularProgress size={20} />
+                </Box>
+              )}
             </ScoresListContainer>
           )}
 

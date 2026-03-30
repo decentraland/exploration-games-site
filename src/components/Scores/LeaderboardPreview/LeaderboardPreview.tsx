@@ -23,21 +23,11 @@ import { LeaderboardPreviewProps } from "./LeaderboardPreview.typed.ts"
 import { scoresApi } from "../../../api/scoresApi.ts"
 import { leaderboardConfig } from "../../../config/leaderboard.ts"
 import { Leaderboard } from "../../../types.ts"
+import { formatMsToMinutes } from "../../../utils/formatTime.ts"
 import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
 import { TableHeader } from "../../Tables/TableHeader.tsx"
 
 type LeaderboardRow = Leaderboard & { rank: number }
-
-const formatMsToHms = (value: number) => {
-  if (!Number.isFinite(value) || value < 0) return "00:00:00"
-
-  const totalSeconds = Math.floor(value / 1000)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  const centiseconds = Math.floor((value % 1000) / 10)
-
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(centiseconds).padStart(2, "0")}`
-}
 
 const LeaderboardPreview = React.memo(
   ({ gameId, refreshKey, onClose }: LeaderboardPreviewProps) => {
@@ -160,9 +150,6 @@ const LeaderboardPreview = React.memo(
                 orderBy="score"
                 headCells={headerRow}
                 onRequestSort={() => {}}
-                // checkboxCell={
-                //   <LeaderboardRankCell padding="none">#</LeaderboardRankCell>
-                // }
               />
               <TableBody>
                 {leaderboard.map((row, index) => (
@@ -180,7 +167,7 @@ const LeaderboardPreview = React.memo(
                     )}
                     {config?.showTime && (
                       <LeaderboardMetricCell padding="none">
-                        {formatMsToHms(row.time)}
+                        {formatMsToMinutes(row.time)}
                       </LeaderboardMetricCell>
                     )}
                     {config?.showMoves && (
