@@ -8,6 +8,7 @@ import { Menu } from "./Menu"
 import { config } from "../../config"
 import { locations } from "../../modules/Locations"
 import { LayoutContainer } from "./Layout.styled"
+import { SelectedGameProvider } from "../Scores/ScoresList/SelectedGameContext"
 
 const Layout = () => {
   const [account, accountState] = useAuthContext()
@@ -50,7 +51,9 @@ const Layout = () => {
         onClickSignOut={handleSignOut}
       />
       <Menu />
-      <Outlet />
+      <SelectedGameProvider>
+        <Outlet />
+      </SelectedGameProvider>
     </LayoutContainer>
   )
 }
