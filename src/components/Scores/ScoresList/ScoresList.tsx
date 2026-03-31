@@ -32,6 +32,7 @@ import {
   ScoresStatusTableCell,
   ScoresUserNameTableCell,
 } from "./ScoresList.styled.ts"
+import { useSelectedGame } from "./SelectedGameContext.tsx"
 import { scoresApi } from "../../../api/scoresApi.ts"
 import { leaderboardConfig } from "../../../config/leaderboard.ts"
 import { locations } from "../../../modules/Locations.ts"
@@ -55,11 +56,6 @@ const sortToProgressSort: Partial<Record<keyof UserProgressRow, ProgressSort>> =
     user_name: ProgressSort.LATEST,
   }
 
-// Module-level state persists across route navigation (component unmount/remount)
-let _gameId: string | null = null
-let _gameName = ""
-let _gameParcel = ""
-
 const FETCH_LIMIT = 1000
 
 const ScoresList = React.memo(() => {
@@ -67,10 +63,12 @@ const ScoresList = React.memo(() => {
   const loading = accountState.loading
   const l = useFormatMessage()
 
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(_gameId)
-  const [selectedGameName, setSelectedGameName] = useState<string>(_gameName)
-  const [selectedGameParcel, setSelectedGameParcel] =
-    useState<string>(_gameParcel)
+  const {
+    gameId: selectedGameId,
+    gameName: selectedGameName,
+    gameParcel: selectedGameParcel,
+    selectGame,
+  } = useSelectedGame()
   const [openGameSelector, setOpenGameSelector] = useState(false)
 
   const [allScores, setAllScores] = useState<UserProgress[]>([])
@@ -274,18 +272,13 @@ const ScoresList = React.memo(() => {
 
   const handleGameSelect = useCallback(
     (gameId: string, gameName: string, gameParcel: string) => {
-      _gameId = gameId
-      _gameName = gameName
-      _gameParcel = gameParcel
-      setSelectedGameId(gameId)
-      setSelectedGameName(gameName)
-      setSelectedGameParcel(gameParcel)
+      selectGame(gameId, gameName, gameParcel)
       setOpenGameSelector(false)
       setPage(0)
       setSelected([])
       if (gameId in leaderboardConfig) setShowLeaderboard(true)
     },
-    []
+    [selectGame]
   )
 
   if (!account && !loading) {
