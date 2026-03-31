@@ -6,7 +6,7 @@ const LeaderboardContainer = styled(Box)({
   right: "24px",
   zIndex: 1200,
   minWidth: "260px",
-  maxWidth: "420px",
+  maxWidth: "540px",
   padding: "16px",
   backgroundColor: "#1e1e1e",
   border: "1px solid rgba(255,255,255,0.1)",

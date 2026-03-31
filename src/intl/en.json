@@ -36,7 +36,7 @@
   "scores_col_moves": "Moves",
   "scores_col_score": "Score",
   "scores_col_status": "Status",
-  "scores_col_time": "Time",
+  "scores_col_time": "Time mm:ss:cs",
   "scores_col_user_address": "Address",
   "scores_col_user_name": "User Name",
   "scores_disable_selected": "Disable",

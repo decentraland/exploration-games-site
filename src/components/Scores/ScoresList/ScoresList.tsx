@@ -24,6 +24,18 @@ import {
   Tooltip,
   Typography,
 } from "decentraland-ui2"
+import { useSelectedGame } from "./SelectedGameContext"
+import { scoresApi } from "../../../api/scoresApi"
+import { leaderboardConfig } from "../../../config/leaderboard"
+import { locations } from "../../../modules/Locations"
+import { ProgressSort, UserProgress } from "../../../types"
+import { formatMsToMinutes } from "../../../utils/formatTime"
+import { ErrorScreen } from "../../ErrorScreen/ErrorScreen"
+import { GamesList } from "../../Games/GamesList/GamesList"
+import { SearchInput } from "../../SearchInput/SearchInput"
+import { HeadCell, TableOrder } from "../../Tables/Table.types"
+import { TableHeader } from "../../Tables/TableHeader"
+import { LeaderboardPreview } from "../LeaderboardPreview/LeaderboardPreview"
 import {
   ScoresAddressTableCell,
   ScoresListContainer,
@@ -31,19 +43,7 @@ import {
   ScoresMetricTableCell,
   ScoresStatusTableCell,
   ScoresUserNameTableCell,
-} from "./ScoresList.styled.ts"
-import { useSelectedGame } from "./SelectedGameContext.tsx"
-import { scoresApi } from "../../../api/scoresApi.ts"
-import { leaderboardConfig } from "../../../config/leaderboard.ts"
-import { locations } from "../../../modules/Locations.ts"
-import { ProgressSort, UserProgress } from "../../../types.ts"
-import { formatMsToMinutes } from "../../../utils/formatTime.ts"
-import { ErrorScreen } from "../../ErrorScreen/ErrorScreen.tsx"
-import { GamesList } from "../../Games/GamesList/GamesList.tsx"
-import { SearchInput } from "../../SearchInput/SearchInput.tsx"
-import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
-import { TableHeader } from "../../Tables/TableHeader.tsx"
-import { LeaderboardPreview } from "../LeaderboardPreview/LeaderboardPreview.tsx"
+} from "./ScoresList.styled"
 
 type UserProgressRow = UserProgress & { __rowKey: string }
 
@@ -285,7 +285,8 @@ const ScoresList = React.memo(() => {
     return <Navigate to={locations.signIn()} />
   }
 
-  const isSelected = (id: string) => selected.includes(id)
+  const selectedSet = useMemo(() => new Set(selected), [selected])
+  const isSelected = (id: string) => selectedSet.has(id)
   const hasLeaderboard = !!selectedGameId && selectedGameId in leaderboardConfig
 
   return (

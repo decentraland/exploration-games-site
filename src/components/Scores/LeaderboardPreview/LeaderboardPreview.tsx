@@ -12,20 +12,20 @@ import {
   TableRow,
   Typography,
 } from "decentraland-ui2"
+import { LeaderboardPreviewProps } from "./LeaderboardPreview.typed"
+import { scoresApi } from "../../../api/scoresApi"
+import { leaderboardConfig } from "../../../config/leaderboard"
+import { Leaderboard } from "../../../types"
+import { formatMsToMinutes } from "../../../utils/formatTime"
+import { HeadCell, TableOrder } from "../../Tables/Table.types"
+import { TableHeader } from "../../Tables/TableHeader"
 import {
   LeaderboardContainer,
   LeaderboardMetricCell,
   LeaderboardNameCell,
   LeaderboardRankCell,
   LeaderboardTableContainer,
-} from "./LeaderboardPreview.styled.ts"
-import { LeaderboardPreviewProps } from "./LeaderboardPreview.typed.ts"
-import { scoresApi } from "../../../api/scoresApi.ts"
-import { leaderboardConfig } from "../../../config/leaderboard.ts"
-import { Leaderboard } from "../../../types.ts"
-import { formatMsToMinutes } from "../../../utils/formatTime.ts"
-import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
-import { TableHeader } from "../../Tables/TableHeader.tsx"
+} from "./LeaderboardPreview.styled"
 
 type LeaderboardRow = Leaderboard & { rank: number }
 
@@ -147,7 +147,7 @@ const LeaderboardPreview = React.memo(
             <Table size="small" aria-label="leaderboard">
               <TableHeader
                 order={TableOrder.DESC}
-                orderBy="score"
+                orderBy="none"
                 headCells={headerRow}
                 onRequestSort={() => {}}
               />
