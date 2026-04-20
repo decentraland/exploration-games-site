@@ -11,6 +11,10 @@ const pages = [
     name: "games",
     path: locations.games(),
   },
+  {
+    name: "scores",
+    path: locations.scores(),
+  },
 ]
 
 const Menu = () => {

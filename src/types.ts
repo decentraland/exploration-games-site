@@ -50,6 +50,41 @@ type GameRequest = {
   y: number
 }
 
+type GameMetrics = {
+  score: number
+  time: number
+  moves: number
+  level: number
+}
+
+type UserProgress = GameMetrics & {
+  id: string
+  game_id: string
+  user_address: string
+  user_name: string
+  data: Record<string, unknown>
+  disabled?: boolean
+}
+
+type Leaderboard = GameMetrics & {
+  user_name: string
+  user_address: string
+  data: Record<string, unknown>
+}
+
+type ProgressStatusBody = {
+  ids: string[]
+  disabled: boolean
+}
+
+enum ProgressSort {
+  SCORE = "score",
+  LATEST = "updated_at",
+  LEVEL = "level",
+  MOVES = "moves",
+  TIME = "time",
+}
+
 export type {
   MissionRequest,
   ChallengeRequest,
@@ -57,6 +92,10 @@ export type {
   GameResponse,
   MissionData,
   ChallengeResponse,
+  GameMetrics,
+  UserProgress,
+  Leaderboard,
+  ProgressStatusBody,
 }
 
-export { MissionType }
+export { MissionType, ProgressSort }

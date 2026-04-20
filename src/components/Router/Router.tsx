@@ -8,6 +8,7 @@ import { GamesScreen } from "../Games/GamesScreen/GamesScreen"
 import { Layout } from "../Layout/Layout"
 import { SignIn } from "../Layout/SignIn"
 import { MissionsScreen } from "../Missions/MissionsScreen/MissionsScreen"
+import { ScoresScreen } from "../Scores/ScoresScreen/ScoresScreen"
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -16,6 +17,7 @@ const router = createBrowserRouter(
         <Route path={locations.signIn()} element={<SignIn />} />
         <Route path={locations.games()} element={<GamesScreen />} />
         <Route path={locations.missions()} element={<MissionsScreen />} />
+        <Route path={locations.scores()} element={<ScoresScreen />} />
       </Route>
     </Route>
   ),

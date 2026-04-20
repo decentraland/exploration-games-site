@@ -82,14 +82,24 @@ const ChallengeEditor = React.memo(
       onUpdate && onUpdate()
     }, [baseData?.id, missionData, onUpdate])
 
-    const onGameSelect = useCallback((game_id: string, gameName: string) => {
-      setOpenGames(false)
-      setMissionData((data) => ({
-        ...data,
-        game_id,
-        gameName,
-      }))
-    }, [])
+    const onGameSelect = useCallback(
+      ({
+        id: game_id,
+        name: gameName,
+      }: {
+        id: string
+        name: string
+        parcel: string
+      }) => {
+        setOpenGames(false)
+        setMissionData((data) => ({
+          ...data,
+          game_id,
+          gameName,
+        }))
+      },
+      []
+    )
 
     const onMissionSelect = useCallback(
       (mission_id: string, missionName: string) => {

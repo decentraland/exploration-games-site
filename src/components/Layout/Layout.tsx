@@ -7,6 +7,7 @@ import { Navbar } from "decentraland-ui2"
 import { Menu } from "./Menu"
 import { config } from "../../config"
 import { locations } from "../../modules/Locations"
+import { SelectedGameProvider } from "../Scores/ScoresList/SelectedGameContext"
 import { LayoutContainer } from "./Layout.styled"
 
 const Layout = () => {
@@ -50,7 +51,9 @@ const Layout = () => {
         onClickSignOut={handleSignOut}
       />
       <Menu />
-      <Outlet />
+      <SelectedGameProvider>
+        <Outlet />
+      </SelectedGameProvider>
     </LayoutContainer>
   )
 }

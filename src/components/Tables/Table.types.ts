@@ -15,6 +15,7 @@ type TableHeaderProps<D> = {
   order: TableOrder
   orderBy: string
   headCells: readonly HeadCell<D>[]
+  checkboxCell?: React.ReactNode
 }
 
 export { TableOrder }

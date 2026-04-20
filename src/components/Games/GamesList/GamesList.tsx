@@ -20,24 +20,24 @@ import {
   Toolbar,
   Typography,
 } from "decentraland-ui2"
+import { GamesProps } from "./GamesList.typed"
+import { gameApi } from "../../../api/gameApi"
+import { locations } from "../../../modules/Locations"
+import { GameResponse } from "../../../types"
+import { AddButton } from "../../AddButton/AddButton"
+import { ErrorScreen } from "../../ErrorScreen/ErrorScreen"
+import { SearchInput } from "../../SearchInput/SearchInput"
+import { HeadCell, TableOrder } from "../../Tables/Table.types"
+import { TableHeader } from "../../Tables/TableHeader"
+import { getComparator, stableSort } from "../../Tables/utils"
+import { GameEditor } from "../GameEditor/GameEditor"
 import {
   GameIdTableCell,
   GameListContainer,
   GameListTableContainer,
   GameNameTableCell,
   GameParcelTableCell,
-} from "./GamesList.styled.ts"
-import { GamesProps } from "./GamesList.typed.ts"
-import { gameApi } from "../../../api/gameApi.ts"
-import { locations } from "../../../modules/Locations.ts"
-import { GameResponse } from "../../../types.ts"
-import { AddButton } from "../../AddButton/AddButton.tsx"
-import { ErrorScreen } from "../../ErrorScreen/ErrorScreen.tsx"
-import { SearchInput } from "../../SearchInput/SearchInput.tsx"
-import { HeadCell, TableOrder } from "../../Tables/Table.types.ts"
-import { TableHeader } from "../../Tables/TableHeader.tsx"
-import { getComparator, stableSort } from "../../Tables/utils.ts"
-import { GameEditor } from "../GameEditor/GameEditor.tsx"
+} from "./GamesList.styled"
 
 const headerRow: readonly HeadCell<GameResponse>[] = [
   {
@@ -112,7 +112,7 @@ const GamesList = React.memo(({ onSelect }: GamesProps) => {
   const handleClick = useCallback(
     (game: GameResponse) => {
       if (onSelect) {
-        onSelect(game.id, game.name)
+        onSelect(game)
       } else {
         openEditorHandler(game)
       }
