@@ -20,13 +20,6 @@ import {
   Toolbar,
   Typography,
 } from "decentraland-ui2"
-import {
-  GameIdTableCell,
-  GameListContainer,
-  GameListTableContainer,
-  GameNameTableCell,
-  GameParcelTableCell,
-} from "./GamesList.styled.ts"
 import { GamesProps } from "./GamesList.typed"
 import { gameApi } from "../../../api/gameApi"
 import { locations } from "../../../modules/Locations"
@@ -38,6 +31,13 @@ import { HeadCell, TableOrder } from "../../Tables/Table.types"
 import { TableHeader } from "../../Tables/TableHeader"
 import { getComparator, stableSort } from "../../Tables/utils"
 import { GameEditor } from "../GameEditor/GameEditor"
+import {
+  GameIdTableCell,
+  GameListContainer,
+  GameListTableContainer,
+  GameNameTableCell,
+  GameParcelTableCell,
+} from "./GamesList.styled"
 
 const headerRow: readonly HeadCell<GameResponse>[] = [
   {
@@ -112,7 +112,7 @@ const GamesList = React.memo(({ onSelect }: GamesProps) => {
   const handleClick = useCallback(
     (game: GameResponse) => {
       if (onSelect) {
-        onSelect(game.id, game.name, game.parcel)
+        onSelect(game)
       } else {
         openEditorHandler(game)
       }

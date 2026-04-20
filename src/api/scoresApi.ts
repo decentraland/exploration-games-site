@@ -1,7 +1,12 @@
 import API from "decentraland-gatsby/dist/utils/api/API"
 import Options from "decentraland-gatsby/dist/utils/api/Options"
 import { config } from "../config"
-import { Leaderboard, ProgressSort, UserProgress } from "../types"
+import {
+  Leaderboard,
+  ProgressSort,
+  ProgressStatusBody,
+  UserProgress,
+} from "../types"
 
 const SERVER_URL = config.get("SERVER_URL")
 const api = new API(SERVER_URL)
@@ -78,7 +83,10 @@ export const scoresApi = {
     }
   },
 
-  async setProgressStatus(ids: string[], disabled: boolean): Promise<unknown> {
+  async setProgressStatus({
+    ids,
+    disabled,
+  }: ProgressStatusBody): Promise<unknown> {
     try {
       const response = await api.fetch(
         `/api/games/progress/status`,

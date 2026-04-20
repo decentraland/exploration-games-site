@@ -45,7 +45,7 @@ import {
   ScoresUserNameTableCell,
 } from "./ScoresList.styled"
 
-type UserProgressRow = UserProgress & { __rowKey: string }
+type UserProgressRow = UserProgress
 
 const sortToProgressSort: Partial<Record<keyof UserProgressRow, ProgressSort>> =
   {
@@ -257,7 +257,7 @@ const ScoresList = React.memo(() => {
       if (selected.length === 0) return
       setActionLoading(true)
       try {
-        await scoresApi.setProgressStatus(selected, disabled)
+        await scoresApi.setProgressStatus({ ids: selected, disabled })
         setSelected([])
         setLeaderboardKey((k) => k + 1)
         fetchScores()
@@ -271,7 +271,15 @@ const ScoresList = React.memo(() => {
   )
 
   const handleGameSelect = useCallback(
-    (gameId: string, gameName: string, gameParcel: string) => {
+    ({
+      id: gameId,
+      name: gameName,
+      parcel: gameParcel,
+    }: {
+      id: string
+      name: string
+      parcel: string
+    }) => {
       selectGame(gameId, gameName, gameParcel)
       setOpenGameSelector(false)
       setPage(0)
@@ -339,7 +347,6 @@ const ScoresList = React.memo(() => {
         {hasLeaderboard && (
           <Tooltip title="Show Leaderboard">
             <Button
-              // size="small"
               variant={!showLeaderboard ? "outlined" : "contained"}
               onClick={() => setShowLeaderboard((v) => !v)}
             >
